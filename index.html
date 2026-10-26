@@ -463,7 +463,7 @@ function render() {
   // Painel da proposta
   if (p.nm > 0) {
     $('hFig').className = 'hero-fig'; $('hFig').textContent = fmtBRL(r.PMTm);
-    $('hSub').textContent = plural(p.nm, 'parcela', 'parcelas') + ', ' + span(r.m1, r.lastM);
+    $('hSub').textContent = plural(p.nm, 'parcela', 'parcelas');
   } else {
     $('hFig').className = 'hero-fig empty'; $('hFig').textContent = 'Sem parcelas mensais'; $('hSub').textContent = '';
   }
@@ -472,7 +472,7 @@ function render() {
   if (p.na > 0) {
     var am = r.annualMonths;
     $('hsA').className = 'hs-v'; $('hsA').innerHTML = '<span class="q">' + p.na + ' ×</span>' + fmtBRL(r.PMTa);
-    $('hsAs').textContent = (p.na === 1 ? 'Em ' + monthLabel(am[0]) : 'De ' + monthLabel(am[0]) + ' a ' + monthLabel(am[am.length - 1])) + '.';
+    $('hsAs').textContent = '';
   } else {
     $('hsA').className = 'hs-v empty'; $('hsA').textContent = 'Sem anuais'; $('hsAs').textContent = '';
   }
@@ -494,8 +494,8 @@ function resumo() {
       ? 'Sinal: ' + fmtBRL(p.S) + ' à vista, no ato'
       : 'Sinal: ' + fmtBRL(p.S) + ' em ' + r.ns + 'x de ' + fmtBRL(r.sinalParc[0]) + ', ' + sinalWhen(r.ns) + ' (' + span(0, r.ns - 1) + ')'
   ];
-  if (p.nm) out.push('Mensais: ' + p.nm + 'x de ' + fmtBRL(r.PMTm) + ' (' + span(r.m1, r.lastM) + ')');
-  if (p.na) out.push('Anuais: ' + p.na + 'x de ' + fmtBRL(r.PMTa) + ' (' + span(am[0], am[am.length - 1]) + ')');
+  if (p.nm) out.push('Mensais: ' + p.nm + 'x de ' + fmtBRL(r.PMTm));
+  if (p.na) out.push('Anuais: ' + p.na + 'x de ' + fmtBRL(r.PMTa));
   out.push('Juros do saldo: ' + fmtPct(p.i, 2) + ' a.m., Tabela Price');
   out.push('Valores nominais, sem correção monetária.');
   out.push('Simulação meramente ilustrativa, sem valor de proposta. Não gera qualquer compromisso da VPA Urbanismo.');
@@ -568,15 +568,15 @@ function buildPdf() {
   font('bold', 30); doc.setTextColor(242, 245, 250);
   T(fmtBRL(main ? r.PMTm : r.PMTa), M + 8, y + 23);
   font('normal', 10.5); doc.setTextColor(214, 222, 236);
-  T(main ? plural(p.nm, 'parcela', 'parcelas') + ', ' + span(r.m1, r.lastM) : plural(p.na, 'parcela', 'parcelas') + ', ' + span(am[0], am[am.length - 1]), M + 8, y + 31);
+  T(plural(main ? p.nm : p.na, 'parcela', 'parcelas'), M + 8, y + 31);
   y += bh + 8;
 
   // Condições linha a linha
   var rows = [['Valor de venda', fmtBRL(p.V), '']];
   rows.push(['Sinal', r.ns + ' × ' + fmtBRL(r.sinalParc[0]),
     r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
-  if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), cap(span(r.m1, r.lastM)) + '.']);
-  if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), cap(span(am[0], am[am.length - 1])) + '.']);
+  if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
+  if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
   rows.push(['Juros do saldo', fmtPct(p.i, 2) + ' ao mês', 'Tabela Price, contados a partir da última parcela do sinal.']);
   rows.push(['Data da proposta', dataBR($('data').value), '']);
   rows.forEach(function (row) {

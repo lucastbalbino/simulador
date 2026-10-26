@@ -30,4 +30,5 @@ Sempre publique nos dois lugares juntos.
 6. O aviso legal ("Simulação meramente ilustrativa... não gera qualquer compromisso da VPA Urbanismo") aparece no rodapé, no PDF e no resumo copiado.
 7. Dentro do claude.ai, o PDF usa a capability `downloads`. No site, o PDF baixa direto. O código decide pela presença de `window.claude`.
 8. Com o computador, a página precisa caber numa tela só (cerca de 620 px de altura). No celular, os campos ficam em duas colunas.
-9. Textos em português, sem travessões nem hífens como recurso de formatação.
+9. Datas e prazos aparecem só no sinal. Mensais e anuais mostram apenas a quantidade e o valor, no painel, no PDF e no resumo.
+10. Textos em português, sem travessões nem hífens como recurso de formatação.
