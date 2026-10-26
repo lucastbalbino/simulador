@@ -81,6 +81,22 @@ def main():
     tabs = emp.get('tabela') or []
     tabs = [tabs] if isinstance(tabs, dict) else tabs
     ids = [str(t.get('idtabela')) for t in tabs if isinstance(t, dict) and t.get('idtabela')]
+    for i in ids[:1]:
+        st, tipo, bruto = get(f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{i}?tabelasemjson=true')
+        try:
+            tab = json.loads(bruto)[0]
+            us = tab.get('unidades') or []
+            sits = {}
+            for u in us:
+                sits[u.get('situacao')] = sits.get(u.get('situacao'), 0) + 1
+            nota('Tabela ' + i + ' (parâmetros)', json.dumps({k: tab.get(k) for k in ('tabela', 'juros_futuro_mensal', 'juros_vpl_mensal', 'data_vigencia_de', 'data_vigencia_ate', 'referencia')}, ensure_ascii=False) + ' | situações: ' + json.dumps(sits, ensure_ascii=False))
+            disp = [u for u in us if str(u.get('situacao', '')).lower().startswith('dispon')][:3]
+            for u in disp:
+                nota('Tabela ' + i + ' lote ' + str(u.get('bloco')) + ' ' + str(u.get('unidade')),
+                     json.dumps({'area': u.get('area_privativa'), 'valor_total': u.get('valor_total'), 'series': u.get('series')}, ensure_ascii=False))
+        except Exception as e:  # noqa: BLE001
+            nota('Falha detalhando a tabela', repr(e)[:300])
+    return
     caminhos = [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada?tabelasemjson=true&aprovado=S']
     caminhos += [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{i}?tabelasemjson=true' for i in ids[:1]]
     caminhos += [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada']
