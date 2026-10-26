@@ -22,7 +22,7 @@ Sempre publique nos dois lugares juntos.
 
 ## Regras do simulador
 
-1. Juros fixos de 0,90% a.m., com o campo travado e sem equivalência anual na tela.
+1. Juros fixos de 0,90% a.m. (constante `JUROS` no código), sem campo no formulário e sem equivalência anual. A taxa aparece no painel azul e no texto legal.
 2. Sinal em até 3x sem juros. Padrão: 1x e 10% do valor de venda, acompanhando o valor de venda até o corretor digitar outro sinal.
 3. As mensais começam no mês seguinte à última parcela do sinal, e os juros do saldo contam a partir dessa mesma parcela.
 4. Valor da mensal e valor da anual ficam abertos: o corretor digita um e o outro é calculado para quitar o saldo.

@@ -136,10 +136,10 @@ p { margin: 0; }
 .ficha fieldset + fieldset { padding-top: 12px; border-top: 1px solid var(--line); }
 @media (min-width: 860px) {
   .ficha .row-a { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .ficha .row-b { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ficha .row-b { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
-@media (min-width: 1040px) {
-  .ficha .row-b { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 859px) {
+  .ficha .row-b .field:last-child { grid-column: span 2; }
 }
 @media (min-width: 860px) {
   .ficha .row-a.has-lotes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -330,11 +330,6 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           <label for="m0">1ª anual no mês</label>
           <div class="input"><input id="m0" type="number" inputmode="numeric" min="1" max="600" step="1" value="12" aria-describedby="m0Hint"></div>
           <span class="hint" id="m0Hint"></span>
-        </div>
-        <div class="field">
-          <label for="juros">Juros mensal</label>
-          <div class="input suf"><input id="juros" type="text" value="0,90" readonly aria-readonly="true" aria-describedby="jurosHint"><span class="affix">% a.m.</span></div>
-          <span class="hint" id="jurosHint">Taxa fixa</span>
         </div>
       </fieldset>
     </form>
