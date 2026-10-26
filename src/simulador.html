@@ -123,21 +123,15 @@ p { margin: 0; }
 .ficha { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; display: grid; gap: 12px; min-width: 0; }
 .ficha fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; align-items: start; }
 .ficha fieldset + fieldset { padding-top: 12px; border-top: 1px solid var(--line); }
+/* As duas linhas usam cinco colunas iguais; sem lotes do CV, a primeira fica com três */
 @media (min-width: 860px) {
-  .ficha .row-a { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .ficha .row-b { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .ficha .row-a { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ficha .row-a.has-lotes, .ficha .row-b { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 @media (max-width: 859px) {
-  .ficha .row-b .field:last-child { grid-column: span 2; }
-}
-@media (min-width: 860px) {
-  .ficha .row-a.has-lotes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-@media (min-width: 1040px) {
-  .ficha .row-a.has-lotes { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .ficha .row-a .field:last-child, .ficha .row-b .field:last-child { grid-column: span 2; }
 }
 .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-width: 0; }
-.ficha .field.span2 { grid-column: span 2; }
 .field > label, .field > .label { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .input { position: relative; display: flex; align-items: center; }
 .input input {
@@ -280,7 +274,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           <div class="input pre"><span class="affix">R$</span><input id="sinal" type="text" inputmode="decimal" value="17.990,00" aria-describedby="sinalHint"></div>
           <span class="hint" id="sinalHint"></span>
         </div>
-        <div class="field span2">
+        <div class="field">
           <span class="label" id="nsLabel">Sinal dividido em</span>
           <div class="seg" role="radiogroup" aria-labelledby="nsLabel">
             <input type="radio" name="ns" id="ns1" value="1" checked><label for="ns1">1x</label>
