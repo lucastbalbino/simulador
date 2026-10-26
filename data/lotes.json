@@ -1,7 +1,7 @@
 {
  "empreendimento": "Sweet Village",
  "tabela": "Sweet Village Macaé 220X com 15 ANUAIS",
- "atualizado_em": "2026-10-26T11:02-03:00",
+ "atualizado_em": "2026-10-26T15:46-03:00",
  "lotes": [
   {
    "quadra": "Quadra 01",
@@ -380,12 +380,6 @@
    "lote": "31",
    "area": 303.53,
    "valor": 182988.0
-  },
-  {
-   "quadra": "Quadra 10",
-   "lote": "36",
-   "area": 326.35,
-   "valor": 203388.0
   },
   {
    "quadra": "Quadra 10",
