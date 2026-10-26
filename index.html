@@ -321,9 +321,9 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           <span class="hint" id="tagA"></span>
         </div>
         <div class="field">
-          <label for="m0">1ª anual no mês</label>
-          <div class="input"><input id="m0" type="number" inputmode="numeric" min="1" max="600" step="1" value="12" aria-describedby="m0Hint"></div>
-          <span class="hint" id="m0Hint"></span>
+          <label for="a0">Data da 1ª anual</label>
+          <div class="input"><input id="a0" type="date" aria-describedby="a0Hint"></div>
+          <span class="hint" id="a0Hint"></span>
         </div>
       </fieldset>
     </form>
@@ -356,12 +356,14 @@ function calc(p) {
 
   // Juros do saldo contam a partir da última parcela do sinal (mês b); a 1ª mensal vence no mês seguinte
   var b = ns - 1, m1 = ns;
-  if (p.na > 0 && p.m0 <= b) return fail('A 1ª anual precisa vencer depois da última parcela do sinal, a partir do mês ' + ns + '.');
+  if (p.na > 0 && !(p.a0 > -1e9)) return fail('Informe a data da 1ª parcela anual.');
+  if (p.na > 0 && p.a0 <= b + 1e-6) return fail(ns === 1 ? 'A 1ª anual precisa vencer depois de hoje.' : 'A 1ª anual precisa vencer depois da última parcela do sinal.');
   var disc = function (tt) { return Math.pow(1 + i, -(tt - b)); };
   var lastM = p.nm ? m1 + p.nm - 1 : 0, fm = 0;
   for (t = m1; t <= lastM; t++) fm += disc(t);
   var annualMonths = [], fa = 0;
-  for (k = 0; k < p.na; k++) { annualMonths.push(p.m0 + 12 * k); fa += disc(p.m0 + 12 * k); }
+  // a0 é a data da 1ª anual em meses (fracionários) a partir de hoje; as demais vêm a cada 12 meses
+  for (k = 0; k < p.na; k++) { annualMonths.push(p.a0 + 12 * k); fa += disc(p.a0 + 12 * k); }
 
   var PMTm = 0, PMTa = 0, note = '';
   if (p.na === 0) {
@@ -412,6 +414,20 @@ var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out
 var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
 var JUROS = 0.009, SINAL_PCT = 0.10;
 
+// Data da 1ª anual: padrão 31/12 do ano corrente (ou do próximo, se já passou)
+function primeiraAnualPadrao() {
+  var h = new Date(), ano = h.getMonth() === 11 && h.getDate() >= 31 ? h.getFullYear() + 1 : h.getFullYear();
+  return ano + '-12-31';
+}
+function mesesAte(iso) {
+  var q = String(iso || '').split('-').map(Number);
+  if (q.length !== 3 || !(q[0] > 1900)) return NaN;
+  var alvo = new Date(q[0], q[1] - 1, q[2]), hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  return (alvo - hoje) / 86400000 / 30.4375;
+}
+document.getElementById('a0').value = primeiraAnualPadrao();
+
 // A proposta é sempre datada de hoje
 function hojeISO() { var d = new Date(); return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()); }
 
@@ -434,7 +450,7 @@ function readInputs() {
     ns: parseInt(document.querySelector('input[name="ns"]:checked').value, 10),
     nm: clampInt($('nm').value, 0, 600, 0),
     na: clampInt($('na').value, 0, 50, 0),
-    m0: clampInt($('m0').value, 1, 600, 12),
+    a0: mesesAte($('a0').value),
     i: JUROS,
     mode: driver,
     A: parseMoney($('valAnual').value),
@@ -446,7 +462,8 @@ function render() {
   var p = readInputs();
   $('sinalHint').textContent = p.V > 0 && p.S >= 0 && p.S < p.V ? fmtPct(p.S / p.V, 1) + ' do valor de venda' : '';
   $('nmHint').textContent = p.nm > 0 ? 'A 1ª vence em ' + monthLabel(p.ns) + '.' : '';
-  $('m0Hint').textContent = p.na > 0 ? 'Vence em ' + monthLabel(p.m0) + '.' : '';
+  $('a0Hint').textContent = p.na > 1 ? 'As demais a cada 12 meses.' : '';
+  $('a0').disabled = p.na === 0;
   $('valAnual').disabled = p.na === 0;
   $('valMensal').disabled = p.nm === 0;
 
@@ -742,7 +759,8 @@ $('venda').addEventListener('input', function () {
   $('sinal').value = v > 0 ? fmtMoneyInput(Math.round(v * SINAL_PCT * 100) / 100) : '';
 });
 $('sinal').addEventListener('input', function () { sinalAuto = false; });
-['venda', 'sinal', 'nm', 'na', 'm0'].forEach(function (id) {
+$('a0').addEventListener('change', render);
+['venda', 'sinal', 'nm', 'na', 'a0'].forEach(function (id) {
   $(id).addEventListener('input', render);
 });
 $('valAnual').addEventListener('input', function () { driver = 'anual'; render(); });

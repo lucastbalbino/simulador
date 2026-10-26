@@ -26,7 +26,7 @@ Sempre publique nos dois lugares juntos.
 2. Sinal em até 3x sem juros. Padrão: 1x e 10% do valor de venda, acompanhando o valor de venda até o corretor digitar outro sinal.
 3. As mensais começam no mês seguinte à última parcela do sinal, e os juros do saldo contam a partir dessa mesma parcela.
 4. Valor da mensal e valor da anual ficam abertos: o corretor digita um e o outro é calculado para quitar o saldo.
-5. Padrões: venda de R$ 179.900,00; 220 mensais; 15 anuais de R$ 2.990,00; 1ª anual no mês 12.
+5. Padrões: venda de R$ 179.900,00; 220 mensais; 15 anuais de R$ 2.990,00; 1ª anual em 31/12 do ano corrente (31/12/2026 hoje).
 6. O aviso legal ("Simulação meramente ilustrativa... não gera qualquer compromisso da VPA Urbanismo") aparece no rodapé, na imagem baixada e no resumo copiado.
 7. O botão "Baixar imagem" gera um PNG da ficha da simulação (desenhado em canvas). Dentro do claude.ai, a imagem usa a capability `downloads`; no site, baixa direto. O código decide pela presença de `window.claude`.
 8. Com o computador, a página precisa caber numa tela só (cerca de 620 px de altura). No celular, os campos ficam em duas colunas.
@@ -34,7 +34,8 @@ Sempre publique nos dois lugares juntos.
 10. A taxa de juros não aparece como linha na imagem. Ela fica no texto legal: "As parcelas mensais e anuais já incluem juros de 0,90% ao mês pela Tabela Price, contados a partir da última parcela do sinal."
 11. Textos em português, sem travessões nem hífens como recurso de formatação.
 12. Ao escolher quadra e lote, o valor de venda é preenchido com o valor da tabela do CV e fica travado. O lote escolhido aparece no painel, na imagem e no resumo. Quadra e lote têm destaque em verde (rótulo e borda), por serem os campos principais.
-13. Não há campo de data: a proposta é sempre datada de hoje, e os meses de vencimento partem da data atual.
+13. Não há campo de data da proposta: ela é sempre datada de hoje, e os vencimentos partem da data atual.
+14. A 1ª anual é uma data escolhida pelo corretor (campo "Data da 1ª anual"); as demais vêm a cada 12 meses. No cálculo, cada anual é descontada pelo tempo exato até a data (em meses fracionários de 30,4375 dias). A 1ª anual precisa vencer depois da última parcela do sinal.
 
 ## Integração com o CV CRM
 
