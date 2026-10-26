@@ -34,6 +34,7 @@ Sempre publique nos dois lugares juntos.
 10. A taxa de juros não aparece como linha na imagem. Ela fica no texto legal: "As parcelas mensais e anuais já incluem juros de 0,90% ao mês pela Tabela Price, contados a partir da última parcela do sinal."
 11. Textos em português, sem travessões nem hífens como recurso de formatação.
 12. Ao escolher quadra e lote, o valor de venda é preenchido com o valor da tabela do CV e fica travado. O lote escolhido aparece no painel, na imagem e no resumo. Quadra e lote têm destaque em verde (rótulo e borda), por serem os campos principais.
+13. Não há campo de data: a proposta é sempre datada de hoje, e os meses de vencimento partem da data atual.
 
 ## Integração com o CV CRM
 

@@ -148,6 +148,7 @@ p { margin: 0; }
   .ficha .row-a.has-lotes { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-width: 0; }
+.ficha .field.span2 { grid-column: span 2; }
 .field > label, .field > .label { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .input { position: relative; display: flex; align-items: center; }
 .input input {
@@ -292,7 +293,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           <div class="input pre"><span class="affix">R$</span><input id="sinal" type="text" inputmode="decimal" value="17.990,00" aria-describedby="sinalHint"></div>
           <span class="hint" id="sinalHint"></span>
         </div>
-        <div class="field">
+        <div class="field span2">
           <span class="label" id="nsLabel">Sinal dividido em</span>
           <div class="seg" role="radiogroup" aria-labelledby="nsLabel">
             <input type="radio" name="ns" id="ns1" value="1" checked><label for="ns1">1x</label>
@@ -300,11 +301,6 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
             <input type="radio" name="ns" id="ns3" value="3"><label for="ns3">3x</label>
           </div>
           <span class="hint" id="nsHint"></span>
-        </div>
-        <div class="field">
-          <label for="data">Data da proposta</label>
-          <div class="input"><input id="data" type="date"></div>
-          <span class="hint"></span>
         </div>
       </fieldset>
 
@@ -427,16 +423,11 @@ var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out
 var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
 var JUROS = 0.009, SINAL_PCT = 0.10;
 
-(function initDate() {
-  var d = new Date();
-  $('data').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-})();
+// A proposta é sempre datada de hoje
+function hojeISO() { var d = new Date(); return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()); }
 
 function monthLabel(t) {
-  var parts = ($('data').value || '').split('-').map(Number), y, m;
-  if (parts.length === 3 && parts[0] > 1900) { y = parts[0]; m = parts[1] - 1; }
-  else { var d = new Date(); y = d.getFullYear(); m = d.getMonth(); }
-  var dt = new Date(y, m + t, 1);
+  var d = new Date(), dt = new Date(d.getFullYear(), d.getMonth() + t, 1);
   return MESES[dt.getMonth()] + '/' + String(dt.getFullYear()).slice(2);
 }
 function span(a, b) { return a === b ? 'em ' + monthLabel(a) : 'de ' + monthLabel(a) + ' a ' + monthLabel(b); }
@@ -637,7 +628,7 @@ function buildImage() {
       r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
     if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
     if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
-    rows.push(['Data da proposta', dataBR($('data').value), '']);
+    rows.push(['Data da proposta', dataBR(hojeISO()), '']);
     rows.forEach(function (row) {
       font(400, 28); text(row[0], M, y + 36, MUTED);
       font(700, 32); text(row[1], W - M, y + 36, INK, 'right');
@@ -675,7 +666,7 @@ $('imgBtn').addEventListener('click', function () {
   if (!saveMode) { copyResumo(); return; }
   var btn = this, status = $('copyStatus');
   var limpar = function () { setTimeout(function () { status.textContent = ''; }, 3000); };
-  var q = ($('data').value || '').split('-');
+  var q = hojeISO().split('-');
   var nome = 'simulacao-sweet-village' + (q.length === 3 ? '-' + q[2] + '-' + q[1] + '-' + q[0] : '') + '.png';
   btn.disabled = true; status.textContent = '';
   dlPromise.then(function (dl) {
@@ -762,7 +753,7 @@ $('venda').addEventListener('input', function () {
   $('sinal').value = v > 0 ? fmtMoneyInput(Math.round(v * SINAL_PCT * 100) / 100) : '';
 });
 $('sinal').addEventListener('input', function () { sinalAuto = false; });
-['venda', 'sinal', 'data', 'nm', 'na', 'm0'].forEach(function (id) {
+['venda', 'sinal', 'nm', 'na', 'm0'].forEach(function (id) {
   $(id).addEventListener('input', render);
 });
 $('valAnual').addEventListener('input', function () { driver = 'anual'; render(); });
