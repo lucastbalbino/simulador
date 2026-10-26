@@ -222,7 +222,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
             <p class="hero-meta" id="hMeta"></p>
             <div class="copy-box">
               <span class="copy-status" id="copyStatus" aria-live="polite"></span>
-              <button class="btn-copy" type="button" id="pdfBtn">Baixar PDF</button>
+              <button class="btn-copy" type="button" id="imgBtn">Baixar imagem</button>
             </div>
           </div>
         </div>
@@ -306,7 +306,6 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
   <span class="mini-go">Ver proposta</span>
 </button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /*CALC_START*/
 function calc(p) {
@@ -504,120 +503,145 @@ function copyResumo() {
   } catch (e) { fallback(); }
 }
 
-/* PDF da simulação */
+/* Imagem da simulação */
 var LEGAL = 'Esta simulação é meramente ilustrativa e tem caráter apenas informativo. Não constitui proposta, oferta, reserva de unidade ou contrato e não gera qualquer compromisso ou obrigação da VPA Urbanismo. Valores, prazos e condições estão sujeitos a alteração sem aviso prévio, à disponibilidade da unidade e à aprovação da empresa no momento da contratação. Valores nominais, sem correção monetária, ITBI, custos de escritura e registro.';
-// Dentro do Claude o PDF passa pela confirmação de download; num site próprio ele baixa direto
+// Dentro do Claude a imagem passa pela confirmação de download; num site próprio ela baixa direto
 var hasViewer = !!(window.claude && typeof window.claude.use === 'function');
 var dlPromise = hasViewer
   ? window.claude.use('downloads').catch(function () { return null; })
   : Promise.resolve(null);
-var pdfMode = true;
-function useCopyFallback() { pdfMode = false; $('pdfBtn').textContent = 'Copiar resumo'; }
+var saveMode = true;
+function useCopyFallback() { saveMode = false; $('imgBtn').textContent = 'Copiar resumo'; }
 dlPromise.then(function (d) { if (hasViewer && !d) useCopyFallback(); });
 
-function pdfText(t) { return String(t).replace(/[  ]/g, ' ').replace(/−/g, '-'); }
-function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
 function two(n) { return String(n).padStart(2, '0'); }
 function dataBR(iso) { var q = (iso || '').split('-'); return q.length === 3 ? q[2] + '/' + q[1] + '/' + q[0] : ''; }
 
-function buildPdf() {
-  var J = window.jspdf && window.jspdf.jsPDF;
-  if (!J || !lastRes) return null;
-  var r = lastRes, p = lastP, am = r.annualMonths, now = new Date();
-  var geradaEm = two(now.getDate()) + '/' + two(now.getMonth() + 1) + '/' + now.getFullYear() + ' às ' + two(now.getHours()) + ':' + two(now.getMinutes());
-  var doc = new J({ unit: 'mm', format: 'a4' });
-  var W = 210, H = 297, M = 18, y = M;
-  var NAVY = [31, 58, 113], INK = [18, 27, 48], INK2 = [58, 69, 96], MUTED = [95, 106, 128], LINE = [213, 219, 229];
-  var color = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
-  var font = function (w, size) { doc.setFont('helvetica', w); doc.setFontSize(size); };
-  var T = function (t, x, yy, o) { doc.text(pdfText(t), x, yy, o || {}); };
-
-  // Cabeçalho com as duas marcas
-  var lh = 13, logos = document.querySelectorAll('.brand .logo-color');
-  try {
-    var w1 = lh * 320 / 168, w2 = lh * 329 / 168, xs = M + w1 + 6;
-    doc.addImage(logos[0].src, 'PNG', M, y, w1, lh);
-    doc.setDrawColor(LINE[0], LINE[1], LINE[2]); doc.setLineWidth(0.3);
-    doc.line(xs, y + 1.5, xs, y + lh - 1.5);
-    doc.addImage(logos[1].src, 'PNG', xs + 6, y, w2, lh);
-  } catch (e) {}
-  font('bold', 15); color(INK); T('Simulação de proposta', W - M, y + 6, { align: 'right' });
-  font('normal', 9.5); color(MUTED); T('Tabela Price', W - M, y + 11.5, { align: 'right' });
-  y += lh + 6;
-  doc.setDrawColor(LINE[0], LINE[1], LINE[2]); doc.setLineWidth(0.3); doc.line(M, y, W - M, y);
-  y += 8;
-
-  // Faixa azul com a parcela principal
-  var bh = 38, main = p.nm > 0;
-  doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(M, y, W - 2 * M, bh, 3, 3, 'F');
-  font('normal', 10.5); doc.setTextColor(214, 222, 236);
-  T(main ? 'Parcela mensal' : 'Parcela anual', M + 8, y + 10);
-  font('bold', 30); doc.setTextColor(242, 245, 250);
-  T(fmtBRL(main ? r.PMTm : r.PMTa), M + 8, y + 23);
-  font('normal', 10.5); doc.setTextColor(214, 222, 236);
-  T(plural(main ? p.nm : p.na, 'parcela', 'parcelas'), M + 8, y + 31);
-  y += bh + 8;
-
-  // Condições linha a linha
-  var rows = [['Valor de venda', fmtBRL(p.V), '']];
-  rows.push(['Sinal', r.ns + ' × ' + fmtBRL(r.sinalParc[0]),
-    r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
-  if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
-  if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
-  rows.push(['Juros do saldo', fmtPct(p.i, 2) + ' ao mês', 'Tabela Price, contados a partir da última parcela do sinal.']);
-  rows.push(['Data da proposta', dataBR($('data').value), '']);
-  rows.forEach(function (row) {
-    font('normal', 10.5); color(MUTED); T(row[0], M, y + 5);
-    font('bold', 12); color(INK); T(row[1], W - M, y + 5, { align: 'right' });
-    if (row[2]) { font('normal', 9.5); color(MUTED); T(row[2], W - M, y + 10.5, { align: 'right' }); }
-    y += row[2] ? 14.5 : 9;
-    doc.line(M, y, W - M, y);
-    y += 4.5;
+var IMG_FONT = 'Manrope, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+function loadFonts() {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  var all = Promise.all(['400 28px Manrope', '700 84px Manrope'].map(function (f) { return document.fonts.load(f); }));
+  return Promise.race([all, new Promise(function (res) { setTimeout(res, 1500); })]).catch(function () {});
+}
+function wrapLines(ctx, text, maxW) {
+  var lines = [], line = '';
+  text.split(' ').forEach(function (w) {
+    var test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else { line = test; }
   });
-
-  // Aviso legal
-  y += 3;
-  var bw = W - 2 * M, pad = 6, lhMm = 4.5;
-  font('normal', 9.5);
-  var lines = doc.splitTextToSize(pdfText(LEGAL), bw - 2 * pad);
-  var boxH = pad + 9.5 + (lines.length - 1) * lhMm + 1.5 + pad;
-  doc.setFillColor(243, 245, 249); doc.roundedRect(M, y, bw, boxH, 2, 2, 'F');
-  font('bold', 10.5); color(INK); T('Importante', M + pad, y + pad + 3.5);
-  font('normal', 9.5); color(INK2);
-  doc.text(lines, M + pad, y + pad + 9.5, { lineHeightFactor: lhMm / (9.5 * 0.3528) });
-
-  // Rodapé
-  font('normal', 8.5); color(MUTED);
-  T('Sweet Village · VPA Urbanismo', M, H - 12);
-  T('Simulação gerada em ' + geradaEm, W - M, H - 12, { align: 'right' });
-  return doc;
+  if (line) lines.push(line);
+  return lines;
+}
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
 
-$('pdfBtn').addEventListener('click', function () {
+function buildImage() {
+  if (!lastRes) return Promise.resolve(null);
+  return loadFonts().then(function () {
+    var r = lastRes, p = lastP, now = new Date();
+    var geradaEm = two(now.getDate()) + '/' + two(now.getMonth() + 1) + '/' + now.getFullYear() + ' às ' + two(now.getHours()) + ':' + two(now.getMinutes());
+    var W = 1080, M = 72, cv = document.createElement('canvas');
+    cv.width = W; cv.height = 2600;
+    var ctx = cv.getContext('2d');
+    var NAVY = '#1F3A71', INK = '#121B30', INK2 = '#3A4560', MUTED = '#5F6A80', LINE = '#D5DBE5', SOFT = '#F3F5F9', ON_NAVY = '#F2F5FA', ON_NAVY2 = '#D6DEEC';
+    var font = function (w, size) { ctx.font = w + ' ' + size + 'px ' + IMG_FONT; };
+    var text = function (t, x, y, color, align) { ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.fillText(t, x, y); };
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, W, cv.height);
+    ctx.textBaseline = 'alphabetic';
+    var y = M;
+
+    // Cabeçalho com as duas marcas
+    var lh = 72, logos = document.querySelectorAll('.brand .logo-color');
+    try {
+      var w1 = lh * 320 / 168, w2 = lh * 329 / 168, xs = M + w1 + 28;
+      ctx.drawImage(logos[0], M, y, w1, lh);
+      ctx.fillStyle = LINE; ctx.fillRect(xs, y + 8, 2, lh - 16);
+      ctx.drawImage(logos[1], xs + 28, y, w2, lh);
+    } catch (e) {}
+    font(700, 34); text('Simulação de proposta', W - M, y + 34, INK, 'right');
+    font(400, 24); text('Tabela Price', W - M, y + 68, MUTED, 'right');
+    y += lh + 36;
+    ctx.fillStyle = LINE; ctx.fillRect(M, y, W - 2 * M, 2);
+    y += 40;
+
+    // Faixa azul com a parcela principal
+    var main = p.nm > 0, bh = 232;
+    ctx.fillStyle = NAVY; roundRectPath(ctx, M, y, W - 2 * M, bh, 20); ctx.fill();
+    font(400, 28); text(main ? 'Parcela mensal' : 'Parcela anual', M + 48, y + 64, ON_NAVY2);
+    font(700, 84); text(fmtBRL(main ? r.PMTm : r.PMTa), M + 48, y + 158, ON_NAVY);
+    font(400, 28); text(plural(main ? p.nm : p.na, 'parcela', 'parcelas'), M + 48, y + 204, ON_NAVY2);
+    y += bh + 40;
+
+    // Condições linha a linha
+    var rows = [['Valor de venda', fmtBRL(p.V), '']];
+    rows.push(['Sinal', r.ns + ' × ' + fmtBRL(r.sinalParc[0]),
+      r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
+    if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
+    if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
+    rows.push(['Juros do saldo', fmtPct(p.i, 2) + ' ao mês', 'Tabela Price, contados a partir da última parcela do sinal.']);
+    rows.push(['Data da proposta', dataBR($('data').value), '']);
+    rows.forEach(function (row) {
+      font(400, 28); text(row[0], M, y + 36, MUTED);
+      font(700, 32); text(row[1], W - M, y + 36, INK, 'right');
+      if (row[2]) { font(400, 24); text(row[2], W - M, y + 74, MUTED, 'right'); }
+      y += row[2] ? 98 : 60;
+      ctx.fillStyle = LINE; ctx.fillRect(M, y, W - 2 * M, 2);
+      y += 24;
+    });
+
+    // Aviso legal
+    y += 12;
+    var pad = 36, bw = W - 2 * M, lhT = 36;
+    font(400, 24);
+    var lines = wrapLines(ctx, LEGAL, bw - 2 * pad);
+    var boxH = 2 * pad + 86 + (lines.length - 1) * lhT;
+    ctx.fillStyle = SOFT; roundRectPath(ctx, M, y, bw, boxH, 16); ctx.fill();
+    font(700, 28); text('Importante', M + pad, y + pad + 26, INK);
+    font(400, 24);
+    lines.forEach(function (ln, i) { text(ln, M + pad, y + pad + 74 + i * lhT, INK2); });
+    y += boxH + 56;
+
+    // Rodapé
+    font(400, 22);
+    text('Sweet Village · VPA Urbanismo', M, y, MUTED);
+    text('Simulação gerada em ' + geradaEm, W - M, y, MUTED, 'right');
+    var out = document.createElement('canvas');
+    out.width = W; out.height = y + 52;
+    out.getContext('2d').drawImage(cv, 0, 0);
+    return new Promise(function (res) { out.toBlob(function (blob) { res(blob); }, 'image/png'); });
+  });
+}
+
+$('imgBtn').addEventListener('click', function () {
   if (!lastRes) return;
-  if (!pdfMode) { copyResumo(); return; }
+  if (!saveMode) { copyResumo(); return; }
   var btn = this, status = $('copyStatus');
+  var limpar = function () { setTimeout(function () { status.textContent = ''; }, 3000); };
+  var q = ($('data').value || '').split('-');
+  var nome = 'simulacao-sweet-village' + (q.length === 3 ? '-' + q[2] + '-' + q[1] + '-' + q[0] : '') + '.png';
   btn.disabled = true; status.textContent = '';
   dlPromise.then(function (dl) {
     if (hasViewer && !dl) { useCopyFallback(); copyResumo(); return; }
-    var doc = buildPdf();
-    if (!doc) { status.textContent = 'Não foi possível gerar o PDF. Recarregue a página.'; return; }
-    var q = ($('data').value || '').split('-');
-    var nome = 'simulacao-sweet-village' + (q.length === 3 ? '-' + q[2] + '-' + q[1] + '-' + q[0] : '') + '.pdf';
-    if (!hasViewer) {
-      doc.save(nome);
-      status.textContent = 'PDF baixado';
-      setTimeout(function () { status.textContent = ''; }, 3000);
-      return;
-    }
-    return dl.save({ filename: nome, data: doc.output('blob') }).then(function () {
-      status.textContent = 'PDF salvo';
-      setTimeout(function () { status.textContent = ''; }, 3000);
-    }, function (err) {
-      var c = err && err.code;
-      if (c === 'declined') status.textContent = 'Download cancelado';
-      else if (c === 'rate_limited') status.textContent = 'Aguarde um instante e tente de novo';
-      else { useCopyFallback(); status.textContent = 'Download indisponível aqui. Use Copiar resumo.'; }
+    return buildImage().then(function (blob) {
+      if (!blob) { status.textContent = 'Não foi possível gerar a imagem. Recarregue a página.'; return; }
+      if (!hasViewer) {
+        var url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        status.textContent = 'Imagem baixada'; limpar();
+        return;
+      }
+      return dl.save({ filename: nome, data: blob }).then(function () {
+        status.textContent = 'Imagem salva'; limpar();
+      }, function (err) {
+        var c = err && err.code;
+        if (c === 'declined') status.textContent = 'Download cancelado';
+        else if (c === 'rate_limited') status.textContent = 'Aguarde um instante e tente de novo';
+        else { useCopyFallback(); status.textContent = 'Download indisponível aqui. Use Copiar resumo.'; }
+      });
     });
   }).then(function () { btn.disabled = false; }, function () { btn.disabled = false; });
 });

@@ -27,8 +27,8 @@ Sempre publique nos dois lugares juntos.
 3. As mensais começam no mês seguinte à última parcela do sinal, e os juros do saldo contam a partir dessa mesma parcela.
 4. Valor da mensal e valor da anual ficam abertos: o corretor digita um e o outro é calculado para quitar o saldo.
 5. Padrões: venda de R$ 179.900,00; 220 mensais; 15 anuais de R$ 2.990,00; 1ª anual no mês 12.
-6. O aviso legal ("Simulação meramente ilustrativa... não gera qualquer compromisso da VPA Urbanismo") aparece no rodapé, no PDF e no resumo copiado.
-7. Dentro do claude.ai, o PDF usa a capability `downloads`. No site, o PDF baixa direto. O código decide pela presença de `window.claude`.
+6. O aviso legal ("Simulação meramente ilustrativa... não gera qualquer compromisso da VPA Urbanismo") aparece no rodapé, na imagem baixada e no resumo copiado.
+7. O botão "Baixar imagem" gera um PNG da ficha da simulação (desenhado em canvas). Dentro do claude.ai, a imagem usa a capability `downloads`; no site, baixa direto. O código decide pela presença de `window.claude`.
 8. Com o computador, a página precisa caber numa tela só (cerca de 620 px de altura). No celular, os campos ficam em duas colunas.
-9. Datas e prazos aparecem só no sinal. Mensais e anuais mostram apenas a quantidade e o valor, no painel, no PDF e no resumo.
+9. Datas e prazos aparecem só no sinal. Mensais e anuais mostram apenas a quantidade e o valor, no painel, na imagem e no resumo.
 10. Textos em português, sem travessões nem hífens como recurso de formatação.
