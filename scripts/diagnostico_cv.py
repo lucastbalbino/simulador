@@ -78,7 +78,9 @@ def main():
         ca = [c.get('nome_referencia') for c in (unidade.get('campos_adicionais') or [])]
         nota('Campos adicionais da unidade', json.dumps(ca, ensure_ascii=False))
 
-    ids = [str(t.get('idtabela')) for t in (emp.get('tabela') or []) if t.get('idtabela')]
+    tabs = emp.get('tabela') or []
+    tabs = [tabs] if isinstance(tabs, dict) else tabs
+    ids = [str(t.get('idtabela')) for t in tabs if isinstance(t, dict) and t.get('idtabela')]
     caminhos = [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada?tabelasemjson=true&aprovado=S']
     caminhos += [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{i}?tabelasemjson=true' for i in ids[:1]]
     caminhos += [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada']
