@@ -35,6 +35,8 @@ def get(caminho):
         return e.code, e.headers.get('Content-Type', ''), e.read().decode('utf-8', 'replace')[:300]
     except urllib.error.URLError as e:
         return 0, '', str(e.reason)
+    except Exception as e:  # noqa: BLE001
+        return -1, '', repr(e)[:300]
 
 
 def esqueleto(v, prof=0, max_prof=6):
@@ -76,18 +78,29 @@ def main():
         ca = [c.get('nome_referencia') for c in (unidade.get('campos_adicionais') or [])]
         nota('Campos adicionais da unidade', json.dumps(ca, ensure_ascii=False))
 
-    for caminho in (
-        f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada?tabelasemjson=true&aprovado=S',
-        f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada?tabelasemjson=true',
-        f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco',
-    ):
-        st, tipo, bruto = get(caminho)
+    ids = [str(t.get('idtabela')) for t in (emp.get('tabela') or []) if t.get('idtabela')]
+    caminhos = [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada?tabelasemjson=true&aprovado=S']
+    caminhos += [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{i}?tabelasemjson=true' for i in ids[:1]]
+    caminhos += [f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/detalhada']
+    for caminho in caminhos:
         try:
-            corpo = json.loads(bruto)
-            resumo = json.dumps(esqueleto(corpo), ensure_ascii=False)
-        except ValueError:
-            resumo = f'(não é JSON, {len(bruto)} caracteres) ' + re.sub(r'\s+', ' ', bruto[:300])
-        nota(f'{st} {caminho.split(ID_EMP, 1)[1]}', f'{tipo} | {resumo}')
+            st, tipo, bruto = get(caminho)
+            try:
+                corpo = json.loads(bruto)
+                resumo = json.dumps(esqueleto(corpo), ensure_ascii=False)
+                links = corpo.get('links') if isinstance(corpo, dict) else None
+            except ValueError:
+                corpo, links = None, None
+                resumo = f'(não é JSON, {len(bruto)} caracteres) ' + re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', bruto))[:600]
+            nota(f'{st} {caminho.split(ID_EMP, 1)[1]}'[:120], f'{tipo} | {resumo}')
+            if links:
+                req = urllib.request.Request(links[0], headers={'email': EMAIL, 'token': TOKEN})
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    html = r.read().decode('utf-8', 'replace')
+                texto = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' | ', re.sub(r'(?s)<(script|style).*?</\1>', '', html)))
+                nota('Arquivo da tabela (início)', f'{len(html)} caracteres | ' + texto[:1500])
+        except Exception as e:  # noqa: BLE001
+            nota('Falha em ' + caminho.split('?')[0][-40:], repr(e)[:400])
 
 
 if __name__ == '__main__':
