@@ -495,7 +495,7 @@ function resumo() {
   ];
   if (p.nm) out.push('Mensais: ' + p.nm + 'x de ' + fmtBRL(r.PMTm));
   if (p.na) out.push('Anuais: ' + p.na + 'x de ' + fmtBRL(r.PMTa));
-  out.push('Juros do saldo: ' + fmtPct(p.i, 2) + ' a.m., Tabela Price');
+  out.push('Parcelas com juros de ' + fmtPct(p.i, 2) + ' a.m. já incluídos (Tabela Price).');
   out.push('Valores nominais, sem correção monetária.');
   out.push('Simulação meramente ilustrativa, sem valor de proposta. Não gera qualquer compromisso da VPA Urbanismo.');
   return out.join('\n').replace(/ /g, ' ');
@@ -517,7 +517,11 @@ function copyResumo() {
 }
 
 /* Imagem da simulação */
-var LEGAL = 'Esta simulação é meramente ilustrativa e tem caráter apenas informativo. Não constitui proposta, oferta, reserva de unidade ou contrato e não gera qualquer compromisso ou obrigação da VPA Urbanismo. Valores, prazos e condições estão sujeitos a alteração sem aviso prévio, à disponibilidade da unidade e à aprovação da empresa no momento da contratação. Valores nominais, sem correção monetária, ITBI, custos de escritura e registro.';
+var LEGAL_A = 'Esta simulação é meramente ilustrativa e tem caráter apenas informativo. Não constitui proposta, oferta, reserva de unidade ou contrato e não gera qualquer compromisso ou obrigação da VPA Urbanismo. Valores, prazos e condições estão sujeitos a alteração sem aviso prévio, à disponibilidade da unidade e à aprovação da empresa no momento da contratação.';
+var LEGAL_B = 'Valores nominais, sem correção monetária, ITBI, custos de escritura e registro.';
+function legalText(p) {
+  return LEGAL_A + ' As parcelas mensais e anuais já incluem juros de ' + fmtPct(p.i, 2) + ' ao mês pela Tabela Price, contados a partir da última parcela do sinal. ' + LEGAL_B;
+}
 // Dentro do Claude a imagem passa pela confirmação de download; num site próprio ela baixa direto
 var hasViewer = !!(window.claude && typeof window.claude.use === 'function');
 var dlPromise = hasViewer
@@ -594,7 +598,6 @@ function buildImage() {
       r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
     if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
     if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
-    rows.push(['Juros do saldo', fmtPct(p.i, 2) + ' ao mês', 'Tabela Price, contados a partir da última parcela do sinal.']);
     rows.push(['Data da proposta', dataBR($('data').value), '']);
     rows.forEach(function (row) {
       font(400, 28); text(row[0], M, y + 36, MUTED);
@@ -609,7 +612,7 @@ function buildImage() {
     y += 12;
     var pad = 36, bw = W - 2 * M, lhT = 36;
     font(400, 24);
-    var lines = wrapLines(ctx, LEGAL, bw - 2 * pad);
+    var lines = wrapLines(ctx, legalText(p), bw - 2 * pad);
     var boxH = 2 * pad + 86 + (lines.length - 1) * lhT;
     ctx.fillStyle = SOFT; roundRectPath(ctx, M, y, bw, boxH, 16); ctx.fill();
     font(700, 28); text('Importante', M + pad, y + pad + 26, INK);
