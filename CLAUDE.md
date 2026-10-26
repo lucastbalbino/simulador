@@ -17,7 +17,7 @@ Sempre publique nos dois lugares juntos.
 
 1. Edite `src/simulador.html`.
 2. Rode `python3 build.py`.
-3. Republique o artefato com a ferramenta Artifact usando `src/simulador.html` e o `url` do artefato (leia o artefato antes com `action: "read"`). Omita `capabilities` no redeploy para manter a `downloads` já declarada.
+3. Republique o artefato com a ferramenta Artifact usando `src/simulador.html` e o `url` do artefato (leia o artefato antes com `action: "read"`), passando também `files: {"data/lotes.json": "data/lotes.json"}` para levar a tabela atual de lotes. Omita `capabilities` no redeploy para manter a `downloads` já declarada.
 4. Faça commit e push na `main`. O Pages atualiza em um ou dois minutos.
 
 ## Regras do simulador
@@ -33,7 +33,7 @@ Sempre publique nos dois lugares juntos.
 9. Datas e prazos aparecem só no sinal. Mensais e anuais mostram apenas a quantidade e o valor, no painel, na imagem e no resumo.
 10. A taxa de juros não aparece como linha na imagem. Ela fica no texto legal: "As parcelas mensais e anuais já incluem juros de 0,90% ao mês pela Tabela Price, contados a partir da última parcela do sinal."
 11. Textos em português, sem travessões nem hífens como recurso de formatação.
-12. Ao escolher quadra e lote, o valor de venda é preenchido com o valor da tabela do CV e fica travado. O lote escolhido aparece no painel, na imagem e no resumo.
+12. Ao escolher quadra e lote, o valor de venda é preenchido com o valor da tabela do CV e fica travado. O lote escolhido aparece no painel, na imagem e no resumo. Quadra e lote têm destaque em verde (rótulo e borda), por serem os campos principais.
 
 ## Integração com o CV CRM
 
@@ -41,5 +41,5 @@ Sempre publique nos dois lugares juntos.
    Decisão do Lucas: do CV o simulador usa **apenas o valor de venda** (`valor_total`). Mensal e anual continuam calculadas pelo próprio simulador (Tabela Price a 0,90% a.m.), sem usar as séries da tabela do CV. Nessas séries a mensal aparece sem juros (os 0,90% entram como "juros futuro") e a anual base é 1% do valor, por isso os números não batem com os do simulador. Quadra, lote e área vêm do CV só para identificar o lote.
 2. `.github/workflows/atualizar-lotes.yml` roda de hora em hora e também pelo botão Run workflow. Só faz commit quando a lista de lotes muda.
 3. Erros e o resumo de cada leitura aparecem como anotações da execução (o script imprime `::error` e `::notice`).
-4. O site lê `data/lotes.json`. Sem esse arquivo, e sempre no artefato do claude.ai (que não lê arquivos de fora), os campos de quadra e lote ficam escondidos e o valor de venda é digitado.
+4. O site lê `data/lotes.json`, atualizado pelo robô. O artefato do claude.ai não lê arquivos de fora, então lê a cópia de `data/lotes.json` publicada junto com ele, que só muda quando o artefato é republicado. Sem o arquivo, os campos de quadra e lote ficam escondidos e o valor de venda é digitado.
 5. Nunca coloque o token em código ou em arquivo do repositório, e nunca grave lotes fictícios em `data/lotes.json`, porque o repositório e o site são públicos.

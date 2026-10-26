@@ -35,6 +35,9 @@ img { max-width: 100%; }
   --on-green: #0D1A33;
   --green-soft: #7BD592;
   --focus: #1B7D36;
+  --pick-bg: #EEF8F1;
+  --pick-line: #27A84B;
+  --pick-ink: #17713A;
   --hover: rgba(18, 27, 48, 0.06);
   --danger-bg: #FBECE9; --danger-fg: #8A2D1C; --danger-line: #E8C2B9;
   --logo-color: block;
@@ -46,6 +49,8 @@ img { max-width: 100%; }
     --bg: #0D1322; --paper: #151D30; --paper-2: #1B2439; --ink: #E7ECF4; --ink-2: #B8C2D4;
     --muted: #8D98AD; --line: #263049; --line-strong: #3A4664; --control-on: #2F56A0;
     --focus: #3CC062; --hover: rgba(231, 236, 244, 0.06);
+  --pick-bg: rgba(60, 192, 98, 0.10); --pick-line: #3CC062; --pick-ink: #7BD592;
+    --pick-bg: rgba(60, 192, 98, 0.10); --pick-line: #3CC062; --pick-ink: #7BD592;
     --danger-bg: #3A1F1A; --danger-fg: #F2B8AA; --danger-line: #5E3128;
     --logo-color: none; --logo-light: block;
     color-scheme: dark;
@@ -174,6 +179,10 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .input select:hover { border-color: var(--muted); }
 .input select:disabled { opacity: 0.5; cursor: not-allowed; }
 .input select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.field.pick > label { color: var(--pick-ink); font-weight: 700; }
+.field.pick select { border: 1.5px solid var(--pick-line); background: var(--pick-bg); font-weight: 600; }
+.field.pick select:hover { border-color: var(--pick-ink); }
+.field.pick .input.sel::after { border-color: var(--pick-ink); }
 .input.sel::after { content: ""; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; margin-top: -6px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); pointer-events: none; }
 .hint { font-size: 12.5px; color: var(--muted); line-height: 1.4; min-height: 1.4em; }
 
@@ -263,14 +272,14 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
     <form class="ficha" id="ficha" autocomplete="off" novalidate aria-label="Condições da proposta">
       <fieldset class="row-a">
         <legend class="sr-only">Lote, valor e sinal</legend>
-        <div class="field lote-field" hidden>
+        <div class="field lote-field pick" hidden>
           <label for="quadra">Quadra</label>
           <div class="input sel"><select id="quadra" aria-describedby="quadraHint"><option value="">Escolha</option></select></div>
           <span class="hint" id="quadraHint"></span>
         </div>
-        <div class="field lote-field" hidden>
+        <div class="field lote-field pick" hidden>
           <label for="lote">Lote</label>
-          <div class="input sel"><select id="lote" disabled aria-describedby="loteHint"><option value="">Escolha a quadra</option></select></div>
+          <div class="input sel"><select id="lote" disabled aria-describedby="loteHint"><option value="">Escolha</option></select></div>
           <span class="hint" id="loteHint"></span>
         </div>
         <div class="field">
@@ -700,7 +709,7 @@ function nomeLoteCompleto(l) { return nomeQuadra(l.quadra) + ', ' + nomeLote(l.l
 function fmtArea(a) { return a.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' m²'; }
 function ordenar(a, b) { return String(a).localeCompare(String(b), 'pt-BR', { numeric: true, sensitivity: 'base' }); }
 function carregarLotes() {
-  if (hasViewer || !window.fetch) return; // o artefato no claude.ai não lê arquivos de fora
+  if (!window.fetch) return; // no site lê o arquivo do robô; no artefato, a cópia publicada junto
   fetch('data/lotes.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
     if (!d || !Array.isArray(d.lotes) || !d.lotes.length) return;
     LOTES = d;
@@ -725,7 +734,7 @@ $('quadra').addEventListener('change', function () {
   var q = this.value, sel = $('lote');
   sel.innerHTML = '';
   soltarLote();
-  if (!q) { sel.add(new Option('Escolha a quadra', '')); sel.disabled = true; render(); return; }
+  if (!q) { sel.add(new Option('Escolha', '')); sel.disabled = true; render(); return; }
   sel.add(new Option('Escolha', ''));
   LOTES.lotes.map(function (l, i) { return { l: l, i: i }; })
     .filter(function (x) { return x.l.quadra === q; })
