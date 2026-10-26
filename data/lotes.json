@@ -1,5 +1,403 @@
 {
  "empreendimento": "Sweet Village",
- "atualizado_em": "2026-10-26T10:52-03:00",
- "lotes": []
+ "tabela": "Sweet Village Macaé 220X com 15 ANUAIS",
+ "atualizado_em": "2026-10-26T11:02-03:00",
+ "lotes": [
+  {
+   "quadra": "Quadra 01",
+   "lote": "2",
+   "area": 746.98,
+   "valor": 914303.52
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "3",
+   "area": 720.56,
+   "valor": 881965.44
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "7",
+   "area": 333.98,
+   "valor": 408791.52
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "8",
+   "area": 300.86,
+   "valor": 368252.64
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "9",
+   "area": 300.54,
+   "valor": 367860.96
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "1",
+   "area": 650.9,
+   "valor": 597526.2
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "2",
+   "area": 644.62,
+   "valor": 591761.16
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "3",
+   "area": 640.81,
+   "valor": 588263.58
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "4",
+   "area": 334.54,
+   "valor": 307107.72
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "5",
+   "area": 326.91,
+   "valor": 300103.38
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "6",
+   "area": 407.35,
+   "valor": 373947.3
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "7",
+   "area": 498.68,
+   "valor": 457788.24
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "8",
+   "area": 503.32,
+   "valor": 462047.76
+  },
+  {
+   "quadra": "Quadra 04",
+   "lote": "8",
+   "area": 302.81,
+   "valor": 173718.78
+  },
+  {
+   "quadra": "Quadra 04",
+   "lote": "10",
+   "area": 302.81,
+   "valor": 173718.78
+  },
+  {
+   "quadra": "Quadra 04",
+   "lote": "16",
+   "area": 302.81,
+   "valor": 170441.07
+  },
+  {
+   "quadra": "Quadra 04",
+   "lote": "19",
+   "area": 326.05,
+   "valor": 187051.31
+  },
+  {
+   "quadra": "Quadra 04",
+   "lote": "23",
+   "area": 307.37,
+   "valor": 184782.96
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "6",
+   "area": 360.54,
+   "valor": 224399.55
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "9",
+   "area": 301.87,
+   "valor": 174877.35
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "10",
+   "area": 301.87,
+   "valor": 173179.52
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "11",
+   "area": 301.87,
+   "valor": 169911.98
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "13",
+   "area": 301.87,
+   "valor": 169911.98
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "19",
+   "area": 311.26,
+   "valor": 178566.45
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "20",
+   "area": 311.26,
+   "valor": 178566.45
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "21",
+   "area": 311.26,
+   "valor": 178566.45
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "22",
+   "area": 311.26,
+   "valor": 178566.45
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "23",
+   "area": 311.26,
+   "valor": 178566.45
+  },
+  {
+   "quadra": "Quadra 05",
+   "lote": "24",
+   "area": 311.26,
+   "valor": 185304.81
+  },
+  {
+   "quadra": "Quadra 06",
+   "lote": "3",
+   "area": 301.87,
+   "valor": 171577.78
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "3",
+   "area": 300.0,
+   "valor": 178601.31
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "4",
+   "area": 300.0,
+   "valor": 178601.31
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "5",
+   "area": 300.0,
+   "valor": 178601.31
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "6",
+   "area": 300.0,
+   "valor": 178601.31
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "7",
+   "area": 300.0,
+   "valor": 178601.31
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "9",
+   "area": 300.0,
+   "valor": 178601.31
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "11",
+   "area": 380.87,
+   "valor": 214378.29
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "12",
+   "area": 369.27,
+   "valor": 207849.05
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "13",
+   "area": 342.05,
+   "valor": 192527.88
+  },
+  {
+   "quadra": "Quadra 07",
+   "lote": "29",
+   "area": 540.97,
+   "valor": 286926.03
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "1",
+   "area": 303.86,
+   "valor": 182672.83
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "3",
+   "area": 297.83,
+   "valor": 177309.43
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "4",
+   "area": 300.09,
+   "valor": 178654.89
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "5",
+   "area": 300.45,
+   "valor": 169112.71
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "6",
+   "area": 305.74,
+   "valor": 172090.26
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "7",
+   "area": 304.63,
+   "valor": 171465.48
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "8",
+   "area": 305.45,
+   "valor": 170801.31
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "9",
+   "area": 302.27,
+   "valor": 170137.12
+  },
+  {
+   "quadra": "Quadra 08",
+   "lote": "32",
+   "area": 360.86,
+   "valor": 225617.82
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "43",
+   "area": 300.71,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "44",
+   "area": 300.62,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "45",
+   "area": 300.53,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "46",
+   "area": 300.42,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "47",
+   "area": 298.6,
+   "valor": 182988.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "48",
+   "area": 296.71,
+   "valor": 182988.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "49",
+   "area": 294.83,
+   "valor": 182988.0
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "50",
+   "area": 292.09,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "1",
+   "area": 609.12,
+   "valor": 234600.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "26",
+   "area": 300.0,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "27",
+   "area": 296.81,
+   "valor": 193392.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "28",
+   "area": 257.21,
+   "valor": 162588.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "30",
+   "area": 282.51,
+   "valor": 142392.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "31",
+   "area": 303.53,
+   "valor": 182988.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "36",
+   "area": 326.35,
+   "valor": 203388.0
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "37",
+   "area": 325.85,
+   "valor": 203388.0
+  },
+  {
+   "quadra": "Quadra 11",
+   "lote": "9",
+   "area": 614.03,
+   "valor": 306000.0
+  }
+ ]
 }
