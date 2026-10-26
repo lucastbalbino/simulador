@@ -37,7 +37,8 @@ Sempre publique nos dois lugares juntos.
 
 ## Integração com o CV CRM
 
-1. `scripts/sync_cv.py` lê `GET https://vpa.cvcrm.com.br/api/v1/cadastros/empreendimentos/4` (Sweet Village), com os headers `email` e `token` vindos dos segredos `CVCRM_EMAIL` e `CVCRM_TOKEN` do repositório. Ele grava `data/lotes.json` só com quadra, lote, área e valor dos lotes disponíveis (`situacao_mapa_disponibilidade` = 1). Se um lote vier sem valor, usa área vezes o valor do m² da tabela vigente.
+1. `scripts/sync_cv.py` lê o Sweet Village em `https://vpa.cvcrm.com.br/api/v1/cadastros/empreendimentos/4` (headers `email` e `token`, vindos dos segredos `CVCRM_EMAIL` e `CVCRM_TOKEN`) para descobrir a tabela de preço aprovada e vigente (hoje a 45, "Sweet Village Macaé 220X com 15 ANUAIS"). Depois lê `/v1/cadastros/empreendimentos/4/tabelasdepreco/{idtabela}?tabelasemjson=true`, que traz todos os lotes com bloco (quadra), unidade (lote), área, situação e `valor_total`. Grava em `data/lotes.json` só os lotes com situação "Disponível". O preço não vem no cadastro do lote (o campo `valor` da unidade é zero). Para fixar outra tabela, defina `CVCRM_ID_TABELA` no workflow.
+   Nas séries da tabela do CV, a mensal aparece sem juros (os 0,90% entram como "juros futuro"), e a anual base é 1% do valor. O simulador aplica a Tabela Price sobre o saldo, por isso a mensal dele é maior que a mensal da tabela do CV.
 2. `.github/workflows/atualizar-lotes.yml` roda de hora em hora e também pelo botão Run workflow. Só faz commit quando a lista de lotes muda.
 3. Erros e o resumo de cada leitura aparecem como anotações da execução (o script imprime `::error` e `::notice`).
 4. O site lê `data/lotes.json`. Sem esse arquivo, e sempre no artefato do claude.ai (que não lê arquivos de fora), os campos de quadra e lote ficam escondidos e o valor de venda é digitado.
