@@ -33,3 +33,12 @@ Sempre publique nos dois lugares juntos.
 9. Datas e prazos aparecem só no sinal. Mensais e anuais mostram apenas a quantidade e o valor, no painel, na imagem e no resumo.
 10. A taxa de juros não aparece como linha na imagem. Ela fica no texto legal: "As parcelas mensais e anuais já incluem juros de 0,90% ao mês pela Tabela Price, contados a partir da última parcela do sinal."
 11. Textos em português, sem travessões nem hífens como recurso de formatação.
+12. Ao escolher quadra e lote, o valor de venda é preenchido com o valor da tabela do CV e fica travado. O lote escolhido aparece no painel, na imagem e no resumo.
+
+## Integração com o CV CRM
+
+1. `scripts/sync_cv.py` lê `GET https://vpa.cvcrm.com.br/api/v1/cadastros/empreendimentos/4` (Sweet Village), com os headers `email` e `token` vindos dos segredos `CVCRM_EMAIL` e `CVCRM_TOKEN` do repositório. Ele grava `data/lotes.json` só com quadra, lote, área e valor dos lotes disponíveis (`situacao_mapa_disponibilidade` = 1). Se um lote vier sem valor, usa área vezes o valor do m² da tabela vigente.
+2. `.github/workflows/atualizar-lotes.yml` roda de hora em hora e também pelo botão Run workflow. Só faz commit quando a lista de lotes muda.
+3. Erros e o resumo de cada leitura aparecem como anotações da execução (o script imprime `::error` e `::notice`).
+4. O site lê `data/lotes.json`. Sem esse arquivo, e sempre no artefato do claude.ai (que não lê arquivos de fora), os campos de quadra e lote ficam escondidos e o valor de venda é digitado.
+5. Nunca coloque o token em código ou em arquivo do repositório, e nunca grave lotes fictícios em `data/lotes.json`, porque o repositório e o site são públicos.

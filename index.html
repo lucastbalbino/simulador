@@ -136,6 +136,12 @@ p { margin: 0; }
 @media (min-width: 1040px) {
   .ficha .row-b { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
+@media (min-width: 860px) {
+  .ficha .row-a.has-lotes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1040px) {
+  .ficha .row-a.has-lotes { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
 .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-width: 0; }
 .field > label, .field > .label { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .input { position: relative; display: flex; align-items: center; }
@@ -158,6 +164,17 @@ p { margin: 0; }
 .input input[readonly] { background: var(--paper-2); color: var(--ink-2); cursor: default; }
 .input input[readonly]:hover { border-color: var(--line-strong); }
 input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.input select {
+  width: 100%; min-width: 0; height: 44px; padding: 0 34px 0 12px;
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  background: var(--paper); color: var(--ink);
+  font: 500 16px/1 var(--f-body); appearance: none; -webkit-appearance: none; cursor: pointer;
+  text-overflow: ellipsis;
+}
+.input select:hover { border-color: var(--muted); }
+.input select:disabled { opacity: 0.5; cursor: not-allowed; }
+.input select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.input.sel::after { content: ""; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; margin-top: -6px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); pointer-events: none; }
 .hint { font-size: 12.5px; color: var(--muted); line-height: 1.4; min-height: 1.4em; }
 
 .seg { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; height: 44px; padding: 3px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--paper-2); }
@@ -245,11 +262,21 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 
     <form class="ficha" id="ficha" autocomplete="off" novalidate aria-label="Condições da proposta">
       <fieldset class="row-a">
-        <legend class="sr-only">Valor e sinal</legend>
+        <legend class="sr-only">Lote, valor e sinal</legend>
+        <div class="field lote-field" hidden>
+          <label for="quadra">Quadra</label>
+          <div class="input sel"><select id="quadra" aria-describedby="quadraHint"><option value="">Escolha</option></select></div>
+          <span class="hint" id="quadraHint"></span>
+        </div>
+        <div class="field lote-field" hidden>
+          <label for="lote">Lote</label>
+          <div class="input sel"><select id="lote" disabled aria-describedby="loteHint"><option value="">Escolha a quadra</option></select></div>
+          <span class="hint" id="loteHint"></span>
+        </div>
         <div class="field">
           <label for="venda">Valor de venda</label>
-          <div class="input pre"><span class="affix">R$</span><input id="venda" type="text" inputmode="decimal" value="179.900,00"></div>
-          <span class="hint"></span>
+          <div class="input pre"><span class="affix">R$</span><input id="venda" type="text" inputmode="decimal" value="179.900,00" aria-describedby="vendaHint"></div>
+          <span class="hint" id="vendaHint"></span>
         </div>
         <div class="field">
           <label for="sinal">Valor total do sinal</label>
@@ -388,7 +415,7 @@ function clampInt(str, min, max, dflt) {
 
 var $ = function (id) { return document.getElementById(id); };
 var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true;
+var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
 var JUROS = 0.009, SINAL_PCT = 0.10;
 
 (function initDate() {
@@ -475,7 +502,7 @@ function render() {
   } else {
     $('hsA').className = 'hs-v empty'; $('hsA').textContent = 'Sem anuais'; $('hsAs').textContent = '';
   }
-  $('hMeta').textContent = 'Valor de venda de ' + fmtBRL(p.V) + ', com juros de ' + fmtPct(p.i, 2) + ' ao mês.' + (r.note ? ' ' + r.note : '');
+  $('hMeta').textContent = (loteSel ? nomeLoteCompleto(loteSel) + '. ' : '') + 'Valor de venda de ' + fmtBRL(p.V) + ', com juros de ' + fmtPct(p.i, 2) + ' ao mês.' + (r.note ? ' ' + r.note : '');
 
   // Barra no celular
   $('miniV').innerHTML = p.nm > 0 ? '<span class="q">' + p.nm + ' ×</span>' + fmtBRL(r.PMTm) : '<span class="q">' + p.na + ' ×</span>' + fmtBRL(r.PMTa);
@@ -488,6 +515,7 @@ function resumo() {
   var r = lastRes, p = lastP, am = r.annualMonths, out = [
     'Sweet Village · VPA Urbanismo',
     'Simulação de proposta',
+    loteSel ? 'Lote: ' + nomeLoteCompleto(loteSel) + (loteSel.area > 0 ? ' (' + fmtArea(loteSel.area) + ')' : '') : '',
     'Valor de venda: ' + fmtBRL(p.V),
     r.ns === 1
       ? 'Sinal: ' + fmtBRL(p.S) + ' à vista, no ato'
@@ -498,7 +526,7 @@ function resumo() {
   out.push('Parcelas com juros de ' + fmtPct(p.i, 2) + ' a.m. já incluídos (Tabela Price).');
   out.push('Valores nominais, sem correção monetária.');
   out.push('Simulação meramente ilustrativa, sem valor de proposta. Não gera qualquer compromisso da VPA Urbanismo.');
-  return out.join('\n').replace(/ /g, ' ');
+  return out.filter(Boolean).join('\n').replace(/ /g, ' ');
 }
 
 function copyResumo() {
@@ -593,7 +621,9 @@ function buildImage() {
     y += bh + 40;
 
     // Condições linha a linha
-    var rows = [['Valor de venda', fmtBRL(p.V), '']];
+    var rows = [];
+    if (loteSel) rows.push(['Lote', nomeLoteCompleto(loteSel), loteSel.area > 0 ? 'Área de ' + fmtArea(loteSel.area) + '.' : '']);
+    rows.push(['Valor de venda', fmtBRL(p.V), '']);
     rows.push(['Sinal', r.ns + ' × ' + fmtBRL(r.sinalParc[0]),
       r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
     if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
@@ -663,6 +693,59 @@ $('imgBtn').addEventListener('click', function () {
 });
 
 /* Eventos do formulário */
+/* Lotes do CV: data/lotes.json, gerado de hora em hora pelo robô do GitHub (scripts/sync_cv.py) */
+function nomeQuadra(n) { return /^\s*q/i.test(n) ? n : 'Quadra ' + n; }
+function nomeLote(n) { return /^\s*l/i.test(n) ? n : 'Lote ' + n; }
+function nomeLoteCompleto(l) { return nomeQuadra(l.quadra) + ', ' + nomeLote(l.lote); }
+function fmtArea(a) { return a.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' m²'; }
+function ordenar(a, b) { return String(a).localeCompare(String(b), 'pt-BR', { numeric: true, sensitivity: 'base' }); }
+function carregarLotes() {
+  if (hasViewer || !window.fetch) return; // o artefato no claude.ai não lê arquivos de fora
+  fetch('data/lotes.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+    if (!d || !Array.isArray(d.lotes) || !d.lotes.length) return;
+    LOTES = d;
+    var quadras = [];
+    d.lotes.forEach(function (l) { if (quadras.indexOf(l.quadra) < 0) quadras.push(l.quadra); });
+    quadras.sort(ordenar);
+    var sel = $('quadra');
+    quadras.forEach(function (q) { sel.add(new Option(q, q)); });
+    var t = d.atualizado_em ? new Date(d.atualizado_em) : null;
+    $('quadraHint').textContent = t && !isNaN(t) ? 'Tabela de ' + two(t.getDate()) + '/' + two(t.getMonth() + 1) + ', ' + two(t.getHours()) + ':' + two(t.getMinutes()) : '';
+    document.querySelectorAll('.lote-field').forEach(function (el) { el.hidden = false; });
+    document.querySelector('.row-a').classList.add('has-lotes');
+  }).catch(function () {});
+}
+function soltarLote() {
+  loteSel = null;
+  $('venda').readOnly = false;
+  $('vendaHint').textContent = '';
+  $('loteHint').textContent = '';
+}
+$('quadra').addEventListener('change', function () {
+  var q = this.value, sel = $('lote');
+  sel.innerHTML = '';
+  soltarLote();
+  if (!q) { sel.add(new Option('Escolha a quadra', '')); sel.disabled = true; render(); return; }
+  sel.add(new Option('Escolha', ''));
+  LOTES.lotes.map(function (l, i) { return { l: l, i: i }; })
+    .filter(function (x) { return x.l.quadra === q; })
+    .sort(function (a, b) { return ordenar(a.l.lote, b.l.lote); })
+    .forEach(function (x) { sel.add(new Option(x.l.lote, String(x.i))); });
+  sel.disabled = false;
+  render();
+});
+$('lote').addEventListener('change', function () {
+  if (this.value === '') { soltarLote(); render(); return; }
+  var l = LOTES.lotes[+this.value];
+  loteSel = l;
+  $('venda').value = fmtMoneyInput(l.valor);
+  $('venda').readOnly = true;
+  $('vendaHint').textContent = 'Valor da tabela do CV';
+  $('loteHint').textContent = l.area > 0 ? fmtArea(l.area) : '';
+  if (sinalAuto) $('sinal').value = fmtMoneyInput(Math.round(l.valor * SINAL_PCT * 100) / 100);
+  render();
+});
+
 // O sinal acompanha 10% do valor de venda até o corretor digitar outro valor
 $('venda').addEventListener('input', function () {
   if (!sinalAuto) return;
@@ -691,6 +774,7 @@ try { desk.addEventListener('change', syncMini); } catch (e) {}
 $('mini').addEventListener('click', function () { $('hero').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
 
 render();
+carregarLotes();
 </script>
 
 </body>
