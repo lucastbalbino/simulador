@@ -315,7 +315,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
       </fieldset>
     </form>
 
-    <p class="foot"><strong>Simulação meramente ilustrativa, sem valor de proposta, oferta ou reserva, que não gera qualquer compromisso da VPA Urbanismo.</strong> Valores e condições sujeitos a alteração e à aprovação da empresa. Sinal sem juros, com a 1ª parcela no ato e as demais a cada 30 dias. Mensais a partir do mês seguinte à última parcela do sinal. Saldo pela Tabela Price, com juros desde a última parcela do sinal. Digite a mensal ou a anual e o outro valor é calculado. Valores nominais, sem correção monetária, ITBI ou custos de escritura.</p>
+    <p class="foot"><strong>Simulação meramente ilustrativa, sem valor de proposta, oferta ou reserva, que não gera qualquer compromisso da VPA Urbanismo.</strong> Valores e condições sujeitos a alteração e à aprovação da empresa. Sinal sem juros, com a 1ª parcela no ato e as demais a cada 30 dias. Mensais a partir do mês seguinte à última parcela do sinal. Saldo pela Tabela Price, com juros contados a partir da 1ª mensal. Digite a mensal ou a anual e o outro valor é calculado. Valores nominais, sem correção monetária, ITBI ou custos de escritura.</p>
   </div>
 </div>
 
@@ -341,15 +341,16 @@ function calc(p) {
   var sBase = Math.round((p.S / ns) * 100) / 100;
   for (k = 0; k < ns; k++) sinalParc.push(k < ns - 1 ? sBase : Math.round((p.S - sBase * (ns - 1)) * 100) / 100);
 
-  // Juros do saldo contam a partir da última parcela do sinal (mês b); a 1ª mensal vence no mês seguinte
+  // Igual ao CV: os juros contam a partir da 1ª mensal (mês m1, no mês seguinte à última parcela do sinal),
+  // que sai sem juros, e cada parcela é contada em meses cheios de calendário a partir dela
   var b = ns - 1, m1 = ns;
   if (p.na > 0 && !(p.a0 > -1e9)) return fail('Informe a data da 1ª parcela anual.');
-  if (p.na > 0 && p.a0 <= b + 1e-6) return fail(ns === 1 ? 'A 1ª anual precisa vencer depois de hoje.' : 'A 1ª anual precisa vencer depois da última parcela do sinal.');
-  var disc = function (tt) { return Math.pow(1 + i, -(tt - b)); };
+  if (p.na > 0 && p.a0 <= b) return fail(ns === 1 ? 'A 1ª anual precisa vencer a partir do mês que vem.' : 'A 1ª anual precisa vencer depois do mês da última parcela do sinal.');
+  var disc = function (tt) { return Math.pow(1 + i, -(tt - m1)); };
   var lastM = p.nm ? m1 + p.nm - 1 : 0, fm = 0;
   for (t = m1; t <= lastM; t++) fm += disc(t);
   var annualMonths = [], fa = 0;
-  // a0 é a data da 1ª anual em meses (fracionários) a partir de hoje; as demais vêm a cada 12 meses
+  // a0 é o mês da 1ª anual contado a partir do mês atual; as demais vêm a cada 12 meses
   for (k = 0; k < p.na; k++) { annualMonths.push(p.a0 + 12 * k); fa += disc(p.a0 + 12 * k); }
 
   var PMTm = 0, PMTa = 0, note = '';
@@ -406,12 +407,12 @@ function primeiraAnualPadrao() {
   var h = new Date(), ano = h.getMonth() === 11 && h.getDate() >= 31 ? h.getFullYear() + 1 : h.getFullYear();
   return ano + '-12-31';
 }
+// Meses cheios de calendário entre o mês atual e o mês da data (como o CV conta)
 function mesesAte(iso) {
   var q = String(iso || '').split('-').map(Number);
   if (q.length !== 3 || !(q[0] > 1900)) return NaN;
-  var alvo = new Date(q[0], q[1] - 1, q[2]), hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  return (alvo - hoje) / 86400000 / 30.4375;
+  var hoje = new Date();
+  return (q[0] - hoje.getFullYear()) * 12 + (q[1] - 1 - hoje.getMonth());
 }
 document.getElementById('a0').value = primeiraAnualPadrao();
 
@@ -541,7 +542,7 @@ function copyResumo() {
 var LEGAL_A = 'Esta simulação é meramente ilustrativa e tem caráter apenas informativo. Não constitui proposta, oferta, reserva de unidade ou contrato e não gera qualquer compromisso ou obrigação da VPA Urbanismo. Valores, prazos e condições estão sujeitos a alteração sem aviso prévio, à disponibilidade da unidade e à aprovação da empresa no momento da contratação.';
 var LEGAL_B = 'Valores nominais, sem correção monetária, ITBI, custos de escritura e registro.';
 function legalText(p) {
-  return LEGAL_A + ' As parcelas mensais e anuais já incluem juros de ' + fmtPct(p.i, 2) + ' ao mês pela Tabela Price, contados a partir da última parcela do sinal. ' + LEGAL_B;
+  return LEGAL_A + ' As parcelas mensais e anuais já incluem juros de ' + fmtPct(p.i, 2) + ' ao mês pela Tabela Price, contados a partir da 1ª parcela mensal. ' + LEGAL_B;
 }
 // Dentro do Claude a imagem passa pela confirmação de download; num site próprio ela baixa direto
 var hasViewer = !!(window.claude && typeof window.claude.use === 'function');
