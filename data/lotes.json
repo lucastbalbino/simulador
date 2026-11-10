@@ -2,7 +2,7 @@
  "empreendimento": "Sweet Village",
  "tabela": "Sweet Village Macaé 24x_Black Friday",
  "idtabela": 49,
- "atualizado_em": "2026-11-10T14:47-03:00",
+ "atualizado_em": "2026-11-10T15:50-03:00",
  "lotes": [
   {
    "quadra": "Quadra 01",
@@ -146,7 +146,7 @@
    "quadra": "Quadra 05",
    "lote": "14",
    "area": 301.87,
-   "valor": 169911.98
+   "valor": 174990.0
   },
   {
    "quadra": "Quadra 05",
@@ -254,7 +254,7 @@
    "quadra": "Quadra 07",
    "lote": "29",
    "area": 540.97,
-   "valor": 168990.0
+   "valor": 276990.0
   },
   {
    "quadra": "Quadra 08",
