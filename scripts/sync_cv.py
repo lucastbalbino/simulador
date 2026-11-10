@@ -86,8 +86,8 @@ def escolher_tabela(emp):
 
     1. CVCRM_ID_TABELA fixa uma tabela pelo id.
     2. CVCRM_TABELA_PREFERIDA (termos separados por ponto e vírgula, todos precisam
-       estar no nome) dá preferência a uma tabela aprovada, por exemplo a de Black Friday.
-       Se ela não estiver aprovada, volta para a escolha automática com um alerta.
+       estar no nome) dá preferência a uma tabela aprovada e vigente, por exemplo a de Black
+       Friday. Fora da vigência ou sem aprovação, volta para a escolha automática com um alerta.
     3. Automática: aprovada e vigente, preferindo a de 220 parcelas.
     """
     fixa = os.environ.get('CVCRM_ID_TABELA', '').strip()
@@ -109,10 +109,11 @@ def escolher_tabela(emp):
     termos = [normalizar(x) for x in os.environ.get('CVCRM_TABELA_PREFERIDA', '').split(';') if x.strip()]
     if termos:
         casa = [t for t in tabelas if all(x in normalizar(t.get('nome')) for x in termos)]
-        for grupo, eh_vigente in (([t for t in casa if t in vigentes], True), ([t for t in casa if t in aprovadas], False)):
-            if grupo:
-                return grupo[0], eh_vigente
-        situacao = 'não está aprovada' if casa else 'não foi encontrada'
+        # Só vale enquanto estiver aprovada e vigente; depois o robô volta sozinho para a escolha automática
+        preferidas = [t for t in casa if t in vigentes]
+        if preferidas:
+            return preferidas[0], True
+        situacao = 'não está aprovada e vigente' if casa else 'não foi encontrada'
         aviso('warning', 'Tabela preferida indisponível',
               f'A tabela com "{" e ".join(termos)}" no nome {situacao} no CV. Usando a escolha automática.')
     for grupo, eh_vigente in ((vigentes, True), (aprovadas, False)):
