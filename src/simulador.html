@@ -86,18 +86,19 @@ p { margin: 0; }
   display: grid; gap: 14px 28px;
   padding: 18px clamp(18px, 3vw, 30px);
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "main" "sin" "anu" "foot";
+  grid-template-areas: "main" "sin" "anu" "inc" "foot";
 }
 @media (min-width: 560px) {
-  .hero-in { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "main main" "sin anu" "foot foot"; }
+  .hero-in { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: "main main main" "sin anu inc" "foot foot foot"; }
 }
 @media (min-width: 900px) {
-  .hero-in { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "main sin anu" "foot foot foot"; }
-  .hero-sin, .hero-anu { border-left: 1px solid var(--hero-line); padding-left: 28px; }
+  .hero-in { grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr)); grid-template-areas: "main sin anu inc" "foot foot foot foot"; }
+  .hero-sin, .hero-anu, .hero-inc { border-left: 1px solid var(--hero-line); padding-left: 24px; }
 }
 .hero-main { grid-area: main; min-width: 0; }
 .hero-sin { grid-area: sin; min-width: 0; }
 .hero-anu { grid-area: anu; min-width: 0; }
+.hero-inc { grid-area: inc; min-width: 0; }
 .hero-foot { grid-area: foot; display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--hero-line); }
 .hero-k, .hs-k { font-size: 14px; color: var(--on-navy-2); }
 .hero-fig { margin: 4px 0; font: 700 clamp(2.1rem, 4.2vw, 3rem)/1.05 var(--f-body); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -126,10 +127,10 @@ p { margin: 0; }
 /* As duas linhas usam cinco colunas iguais; sem lotes do CV, a primeira fica com três */
 @media (min-width: 860px) {
   .ficha .row-a { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .ficha .row-a.has-lotes, .ficha .row-b { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .ficha .row-a.has-lotes, .ficha .row-b { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 @media (max-width: 859px) {
-  .ficha .row-a .field:last-child, .ficha .row-b .field:last-child { grid-column: span 2; }
+  .ficha .row-a .field:last-child { grid-column: span 2; }
 }
 .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-width: 0; }
 .field > label, .field > .label { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -239,6 +240,11 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
             <p class="hs-v" id="hsA"></p>
             <p class="hs-s" id="hsAs"></p>
           </div>
+          <div class="hero-inc">
+            <p class="hs-k">Incentivo de construção</p>
+            <p class="hs-v" id="hsI"></p>
+            <p class="hs-s" id="hsIs"></p>
+          </div>
           <div class="hero-foot">
             <p class="hero-meta" id="hMeta"></p>
             <div class="copy-box">
@@ -271,7 +277,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
         </div>
         <div class="field">
           <label for="sinal">Valor total do sinal</label>
-          <div class="input pre"><span class="affix">R$</span><input id="sinal" type="text" inputmode="decimal" value="17.990,00" aria-describedby="sinalHint"></div>
+          <div class="input pre"><span class="affix">R$</span><input id="sinal" type="text" inputmode="decimal" value="8.995,00" aria-describedby="sinalHint"></div>
           <span class="hint" id="sinalHint"></span>
         </div>
         <div class="field">
@@ -312,6 +318,11 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           <div class="input"><input id="a0" type="date" aria-describedby="a0Hint"></div>
           <span class="hint" id="a0Hint"></span>
         </div>
+        <div class="field">
+          <label for="inc">Incentivo de construção</label>
+          <div class="input pre is-calc"><span class="affix">R$</span><input id="inc" type="text" readonly tabindex="-1" aria-readonly="true" aria-describedby="incHint"></div>
+          <span class="hint" id="incHint"></span>
+        </div>
       </fieldset>
     </form>
 
@@ -336,7 +347,11 @@ function calc(p) {
   if (p.nm + p.na === 0) return fail('Informe ao menos uma parcela mensal ou anual.');
   if (!(p.i >= 0) || p.i > 0.2) return fail('Informe juros mensais entre 0% e 20% a.m.');
 
-  var F = p.V - p.S, i = p.i, t, k;
+  // Incentivo de construção: parcela fixa de 2% do valor de venda em dez/2029, dispensada ao apresentar o habite-se.
+  // Como no CV, ela sai do saldo pelo valor cheio, e as mensais e anuais quitam o restante.
+  var inc = p.incPct > 0 ? Math.round(p.V * p.incPct * 100) / 100 : 0;
+  var F = p.V - p.S - inc, i = p.i, t, k;
+  if (F <= 0) return fail('O sinal mais o incentivo de construção já cobrem o valor de venda. Reduza o sinal.');
   var ns = Math.min(3, Math.max(1, p.ns || 1)), sinalParc = [];
   var sBase = Math.round((p.S / ns) * 100) / 100;
   for (k = 0; k < ns; k++) sinalParc.push(k < ns - 1 ? sBase : Math.round((p.S - sBase * (ns - 1)) * 100) / 100);
@@ -370,7 +385,7 @@ function calc(p) {
     PMTa = p.A; PMTm = (F - p.A * fa) / fm;
   }
   return {
-    ok: true, F: F, ns: ns, sinalParc: sinalParc, m1: m1, PMTm: PMTm, PMTa: PMTa,
+    ok: true, F: F, inc: inc, ns: ns, sinalParc: sinalParc, m1: m1, PMTm: PMTm, PMTa: PMTa,
     lastM: lastM, annualMonths: annualMonths, taxaAA: Math.pow(1 + i, 12) - 1, note: note
   };
 }
@@ -400,7 +415,9 @@ function clampInt(str, min, max, dflt) {
 var $ = function (id) { return document.getElementById(id); };
 var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
-var JUROS = 0.009, SINAL_PCT = 0.10;
+var JUROS = 0.009, SINAL_PCT = 0.05;
+// Incentivo de construção (série do CV): 2% do valor de venda em dez/2029, dispensado ao apresentar o habite-se
+var INC_PCT = 0.02, INC_MES = 'dez/29';
 
 // Data da 1ª anual: padrão 31/12 do ano corrente (ou do próximo, se já passou)
 function primeiraAnualPadrao() {
@@ -439,6 +456,7 @@ function readInputs() {
     nm: clampInt($('nm').value, 0, 600, 0),
     na: clampInt($('na').value, 0, 50, 0),
     a0: mesesAte($('a0').value),
+    incPct: INC_PCT,
     i: JUROS,
     mode: driver,
     A: parseMoney($('valAnual').value),
@@ -452,6 +470,8 @@ function render() {
   $('nmHint').textContent = p.nm > 0 ? 'A 1ª vence em ' + monthLabel(p.ns) + '.' : '';
   $('a0Hint').textContent = p.na > 1 ? 'As demais a cada 12 meses.' : '';
   $('a0').disabled = p.na === 0;
+  $('inc').value = p.V > 0 ? fmtMoneyInput(Math.round(p.V * INC_PCT * 100) / 100) : '';
+  $('incHint').textContent = fmtPct(INC_PCT, 0) + ' do valor, em ' + INC_MES;
   $('valAnual').disabled = p.na === 0;
   $('valMensal').disabled = p.nm === 0;
 
@@ -496,6 +516,10 @@ function render() {
   } else {
     $('hsA').className = 'hs-v empty'; $('hsA').textContent = 'Sem anuais'; $('hsAs').textContent = '';
   }
+  if (r.inc > 0) {
+    $('hsI').innerHTML = '<span class="q">1 ×</span>' + fmtBRL(r.inc);
+    $('hsIs').textContent = 'Em ' + INC_MES + '. Dispensado com o habite-se.';
+  }
   $('hMeta').textContent = (loteSel ? nomeLoteCompleto(loteSel) + '. ' : '') + 'Valor de venda de ' + fmtBRL(p.V) + ', com juros de ' + fmtPct(p.i, 2) + ' ao mês.' + (r.note ? ' ' + r.note : '');
 
   // Barra no celular
@@ -517,6 +541,7 @@ function resumo() {
   ];
   if (p.nm) out.push('Mensais: ' + p.nm + 'x de ' + fmtBRL(r.PMTm));
   if (p.na) out.push('Anuais: ' + p.na + 'x de ' + fmtBRL(r.PMTa));
+  if (r.inc > 0) out.push('Incentivo de construção: 1x de ' + fmtBRL(r.inc) + ' em ' + INC_MES + ', dispensado ao apresentar o habite-se');
   out.push('Parcelas com juros de ' + fmtPct(p.i, 2) + ' a.m. já incluídos (Tabela Price).');
   out.push('Valores nominais, sem correção monetária.');
   out.push('Simulação meramente ilustrativa, sem valor de proposta. Não gera qualquer compromisso da VPA Urbanismo.');
@@ -622,6 +647,7 @@ function buildImage() {
       r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
     if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
     if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
+    if (r.inc > 0) rows.push(['Incentivo de construção', '1 × ' + fmtBRL(r.inc), 'Em ' + INC_MES + '. Dispensado ao apresentar o habite-se.']);
     rows.push(['Data da proposta', dataBR(hojeISO()), '']);
     rows.forEach(function (row) {
       font(400, 28); text(row[0], M, y + 36, MUTED);

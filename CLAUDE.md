@@ -23,24 +23,26 @@ Sempre publique nos dois lugares juntos.
 ## Regras do simulador
 
 1. Juros fixos de 0,90% a.m. (constante `JUROS` no código), sem campo no formulário e sem equivalência anual. A taxa aparece no painel azul e no texto legal.
-2. Sinal em até 3x sem juros. Padrão: 1x e 10% do valor de venda, acompanhando o valor de venda até o corretor digitar outro sinal.
+2. Sinal em até 3x sem juros. Padrão: 1x e 5% do valor de venda (constante `SINAL_PCT`), acompanhando o valor de venda até o corretor digitar outro sinal.
 3. As mensais começam no mês seguinte à última parcela do sinal. Igual ao CV, os juros contam a partir da 1ª mensal, que sai sem juros, e cada parcela é contada em meses cheios de calendário a partir dela.
 4. Valor da mensal e valor da anual ficam abertos: o corretor digita um e o outro é calculado para quitar o saldo.
-5. Padrões: venda de R$ 179.900,00; 220 mensais; 15 anuais de R$ 2.990,00; 1ª anual em 31/12 do ano corrente (31/12/2026 hoje).
+5. Padrões: venda de R$ 179.900,00; sinal de 5%; 220 mensais; 15 anuais de R$ 2.990,00; 1ª anual em 31/12 do ano corrente (31/12/2026 hoje).
 6. O aviso legal ("Simulação meramente ilustrativa... não gera qualquer compromisso da VPA Urbanismo") aparece no rodapé, na imagem baixada e no resumo copiado.
 7. O botão "Baixar imagem" gera um PNG da ficha da simulação (desenhado em canvas). Dentro do claude.ai, a imagem usa a capability `downloads`; no site, baixa direto. O código decide pela presença de `window.claude`.
 8. Com o computador, a página precisa caber numa tela só (cerca de 620 px de altura). No celular, os campos ficam em duas colunas.
-9. Datas e prazos aparecem só no sinal. Mensais e anuais mostram apenas a quantidade e o valor, no painel, na imagem e no resumo.
+9. Datas e prazos aparecem só no sinal e no incentivo de construção (dez/29). Mensais e anuais mostram apenas a quantidade e o valor, no painel, na imagem e no resumo.
 10. A taxa de juros não aparece como linha na imagem. Ela fica no texto legal: "As parcelas mensais e anuais já incluem juros de 0,90% ao mês pela Tabela Price, contados a partir da 1ª parcela mensal."
 11. Textos em português, sem travessões nem hífens como recurso de formatação.
 12. Ao escolher quadra e lote, o valor de venda é preenchido com o valor da tabela do CV e fica travado. O lote escolhido aparece no painel, na imagem e no resumo. Quadra e lote têm destaque em verde (rótulo e borda), por serem os campos principais.
 13. Não há campo de data da proposta: ela é sempre datada de hoje, e os vencimentos partem da data atual.
 14. A 1ª anual é uma data escolhida pelo corretor (campo "Data da 1ª anual"); as demais vêm a cada 12 meses. No cálculo vale só o mês da data: cada anual é contada em meses cheios a partir do mês da 1ª mensal, como no CV. A 1ª anual precisa vencer depois do mês da última parcela do sinal.
+15. Incentivo de construção (nome da série no CV): parcela única de 2% do valor de venda em dez/2029 (constantes `INC_PCT` e `INC_MES`), dispensada ao apresentar o habite-se. O campo é travado, só para visualização. Como no CV, ela sai do saldo pelo valor cheio e as mensais e anuais quitam o restante. Aparece no painel azul, no formulário, na imagem e no resumo.
 
 ## Integração com o CV CRM
 
 1. `scripts/sync_cv.py` lê o Sweet Village em `https://vpa.cvcrm.com.br/api/v1/cadastros/empreendimentos/4` (headers `email` e `token`, vindos dos segredos `CVCRM_EMAIL` e `CVCRM_TOKEN`) para descobrir a tabela de preço. A escolha segue `CVCRM_TABELA_PREFERIDA` no workflow (termos do nome separados por ponto e vírgula, hoje `black friday;15 anuais`), que vale só enquanto a tabela estiver aprovada e vigente. Sem tabela preferida válida, usa a aprovada e vigente, preferindo a de 220 parcelas. Desde 10/11/2026 é a 48, "Sweet Village Macaé 220x_15 Anuais_Black Friday", vigente até 30/11/2026. Cada leitura registra a lista de tabelas do CV numa anotação "Tabelas no CV". Depois lê `/v1/cadastros/empreendimentos/4/tabelasdepreco/{idtabela}?tabelasemjson=true`, que traz todos os lotes com bloco (quadra), unidade (lote), área, situação e `valor_total`. Grava em `data/lotes.json` só os lotes com situação "Disponível". O preço não vem no cadastro do lote (o campo `valor` da unidade é zero). Para fixar outra tabela, defina `CVCRM_ID_TABELA` no workflow.
    Decisão do Lucas: do CV o simulador usa **apenas o valor de venda** (`valor_total`). Mensal e anual são calculadas pelo próprio simulador, sem usar as séries da tabela do CV. Quadra, lote e área vêm do CV só para identificar o lote.
+   A tabela 48 do CV tem quatro séries: SINAL/ENTRADA (10%), FLUXO MENSAL 2 (220 parcelas), ANUAL (15 parcelas, 10% no total) e INCENTIVO DE CONSTRUÇÃO (1 parcela de 2% em 30/12/2029). O endpoint do empreendimento lista só a tabela mais recente; se ela não estiver aprovada, o robô volta a ler a tabela gravada em `idtabela` no `data/lotes.json`, enquanto ela continuar aprovada e vigente.
    O CV aplica a Tabela Price a 0,90% a.m. em cada série, com juros contados a partir da 1ª mensal e parcelas contadas em meses cheios (coluna "Valor com juros"). O simulador segue a mesma convenção: com a mesma anual e a mesma data, a mensal bate centavo por centavo com o CV. Exemplo conferido em 30/10/2026: Quadra 04, Lote 16, R$ 170.441,07, sinal 1x de R$ 17.044,11, 200 mensais, 15 anuais de R$ 3.657,13 com a 1ª em dez/2027 dá mensal de R$ 1.368,21 nos dois.
 2. `.github/workflows/atualizar-lotes.yml` roda de hora em hora e também pelo botão Run workflow. Só faz commit quando a lista de lotes muda.
 3. Erros e o resumo de cada leitura aparecem como anotações da execução (o script imprime `::error` e `::notice`).
