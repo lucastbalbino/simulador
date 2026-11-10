@@ -25,6 +25,8 @@ jobs:
           CVCRM_TOKEN: ${{ secrets.CVCRM_TOKEN }}
           CVCRM_DOMINIO: vpa
           CVCRM_ID_EMPREENDIMENTO: '4'
+          # Preferência por nome (todos os termos, separados por ponto e vírgula). Vazio = escolha automática.
+          CVCRM_TABELA_PREFERIDA: 'black friday;15 anuais'
         run: python3 scripts/sync_cv.py
 
       - name: Publicar se a tabela mudou

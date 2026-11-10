@@ -75,10 +75,26 @@ def buscar(caminho):
         sys.exit(1)
 
 
+def normalizar(txt):
+    import unicodedata
+    txt = unicodedata.normalize('NFKD', str(txt or '')).encode('ascii', 'ignore').decode()
+    return ' '.join(txt.lower().split())
+
+
 def escolher_tabela(emp):
-    """Tabela aprovada e vigente do empreendimento; prefere a de 220 parcelas se houver mais de uma."""
+    """Escolhe a tabela de preço.
+
+    1. CVCRM_ID_TABELA fixa uma tabela pelo id.
+    2. CVCRM_TABELA_PREFERIDA (termos separados por ponto e vírgula, todos precisam
+       estar no nome) dá preferência a uma tabela aprovada, por exemplo a de Black Friday.
+       Se ela não estiver aprovada, volta para a escolha automática com um alerta.
+    3. Automática: aprovada e vigente, preferindo a de 220 parcelas.
+    """
     fixa = os.environ.get('CVCRM_ID_TABELA', '').strip()
     tabelas = [t for t in lista(emp.get('tabela')) if isinstance(t, dict) and t.get('idtabela')]
+    aviso('notice', 'Tabelas no CV', json.dumps([
+        {k: t.get(k) for k in ('idtabela', 'nome', 'aprovado', 'data_vigencia_de', 'data_vigencia_ate')} for t in tabelas
+    ], ensure_ascii=False))
     if fixa:
         return next((t for t in tabelas if str(t.get('idtabela')) == fixa), {'idtabela': fixa, 'nome': f'Tabela {fixa}'}), True
     hoje = dt.date.today().isoformat()
@@ -89,6 +105,16 @@ def escolher_tabela(emp):
 
     aprovadas = [t for t in tabelas if str(t.get('aprovado', 'S')).upper() == 'S']
     vigentes = [t for t in aprovadas if vigente(t)]
+
+    termos = [normalizar(x) for x in os.environ.get('CVCRM_TABELA_PREFERIDA', '').split(';') if x.strip()]
+    if termos:
+        casa = [t for t in tabelas if all(x in normalizar(t.get('nome')) for x in termos)]
+        for grupo, eh_vigente in (([t for t in casa if t in vigentes], True), ([t for t in casa if t in aprovadas], False)):
+            if grupo:
+                return grupo[0], eh_vigente
+        situacao = 'não está aprovada' if casa else 'não foi encontrada'
+        aviso('warning', 'Tabela preferida indisponível',
+              f'A tabela com "{" e ".join(termos)}" no nome {situacao} no CV. Usando a escolha automática.')
     for grupo, eh_vigente in ((vigentes, True), (aprovadas, False)):
         if grupo:
             grupo = sorted(grupo, key=lambda t: ('220' not in str(t.get('nome', '')), str(t.get('data_vigencia_de') or '')), reverse=False)
