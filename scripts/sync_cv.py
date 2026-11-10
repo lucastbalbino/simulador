@@ -81,6 +81,21 @@ def normalizar(txt):
     return ' '.join(txt.lower().split())
 
 
+def detalhe(idt):
+    dados = buscar(f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{idt}?tabelasemjson=true')
+    return (lista(dados) or [{}])[0]
+
+
+def ainda_vale(d):
+    """A tabela continua aprovada e dentro da vigência, quando o CV informa esses campos."""
+    aprovado = d.get('aprovado')
+    if aprovado is not None and str(aprovado).strip().upper() not in ('S', 'SIM', 'TRUE', '1'):
+        return False
+    hoje = dt.date.today().isoformat()
+    de, ate = str(d.get('data_vigencia_de') or '')[:10], str(d.get('data_vigencia_ate') or '')[:10]
+    return (not de or de <= hoje) and (not ate or hoje <= ate)
+
+
 def escolher_tabela(emp):
     """Escolhe a tabela de preço.
 
@@ -129,9 +144,31 @@ def main():
               'Cadastre os segredos CVCRM_EMAIL e CVCRM_TOKEN no repositório para o robô ler os lotes.')
         return
 
+    anterior = None
+    if SAIDA.exists():
+        try:
+            anterior = json.loads(SAIDA.read_text(encoding='utf-8'))
+        except (ValueError, OSError):
+            anterior = None
+
     # 1. Empreendimento: nome e tabela de preço atual
     emp = buscar(f'/v1/cadastros/empreendimentos/{ID_EMP}?limite_dados_unidade=1&pagina_unidade=1')
     tabela, vigente = escolher_tabela(emp)
+    dados = None
+
+    # O CV lista só a tabela mais recente do empreendimento. Se ela não serve (por exemplo, uma
+    # tabela nova ainda não aprovada), tenta a tabela usada na última leitura, que continua no CV.
+    id_ant = str((anterior or {}).get('idtabela') or '')
+    if (not tabela or not vigente) and id_ant and (not tabela or str(tabela.get('idtabela')) != id_ant):
+        d = detalhe(id_ant)
+        aviso('notice', 'Tabela da última leitura', json.dumps(
+            {k: v for k, v in d.items() if not isinstance(v, (list, dict))}, ensure_ascii=False)[:1500])
+        if lista(d.get('unidades')) and ainda_vale(d):
+            tabela = {'idtabela': id_ant, 'nome': d.get('tabela') or d.get('nome') or (anterior or {}).get('tabela'),
+                      'data_vigencia_de': d.get('data_vigencia_de', ''), 'data_vigencia_ate': d.get('data_vigencia_ate', '')}
+            vigente, dados = True, d
+            aviso('warning', 'Tabela da última leitura mantida',
+                  f'O CV não listou outra tabela aprovada e vigente. Continua a "{tabela["nome"]}" (id {id_ant}).')
     if not tabela:
         aviso('error', 'Nenhuma tabela de preço aprovada', 'O CV não retornou tabela aprovada para o empreendimento. A lista publicada foi mantida.')
         sys.exit(1)
@@ -140,8 +177,8 @@ def main():
 
     # 2. Tabela de preço com todos os lotes: quadra, lote, área, situação e valor total
     idt = str(tabela.get('idtabela'))
-    dados = buscar(f'/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{idt}?tabelasemjson=true')
-    dados = (lista(dados) or [{}])[0]
+    if dados is None:
+        dados = detalhe(idt)
     unidades = lista(dados.get('unidades'))
     if not unidades:
         aviso('error', 'Tabela sem lotes', f'A tabela {idt} não trouxe unidades. A lista publicada foi mantida.')
@@ -178,19 +215,14 @@ def main():
           f'Situações: {json.dumps(contagem, ensure_ascii=False)}. Disponíveis publicados: {len(lotes)}. '
           f'Disponíveis sem preço: {sem_preco}. Exemplos: {json.dumps(lotes[:3], ensure_ascii=False)}')
 
-    anterior = None
-    if SAIDA.exists():
-        try:
-            anterior = json.loads(SAIDA.read_text(encoding='utf-8'))
-        except (ValueError, OSError):
-            anterior = None
-    if anterior and anterior.get('lotes') == lotes and anterior.get('tabela') == nome_tab:
+    if anterior and anterior.get('lotes') == lotes and anterior.get('tabela') == nome_tab and str(anterior.get('idtabela') or '') == idt:
         print('Lotes sem mudança desde a última leitura.')
         return
     SAIDA.parent.mkdir(exist_ok=True)
     SAIDA.write_text(json.dumps({
         'empreendimento': emp.get('nome', ''),
         'tabela': nome_tab,
+        'idtabela': int(idt) if idt.isdigit() else idt,
         'atualizado_em': dt.datetime.now(FUSO).isoformat(timespec='minutes'),
         'lotes': lotes,
     }, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
