@@ -148,6 +148,12 @@ def main():
         sys.exit(1)
 
     lotes, contagem, sem_preco = [], {}, 0
+    # Séries de pagamento de um lote disponível, para conferir a estrutura da tabela (sem dados de clientes)
+    exemplo = next((u for u in unidades if str(u.get('situacao') or '').lower().startswith('dispon')), None)
+    if exemplo:
+        aviso('notice', 'Séries da tabela (exemplo)', json.dumps({
+            'quadra': exemplo.get('bloco'), 'lote': exemplo.get('unidade'), 'valor_total': exemplo.get('valor_total'),
+            'series': exemplo.get('series')}, ensure_ascii=False)[:3500])
     for u in unidades:
         sit = str(u.get('situacao') or '').strip()
         contagem[sit] = contagem.get(sit, 0) + 1
