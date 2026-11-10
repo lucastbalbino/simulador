@@ -1,9 +1,87 @@
 {
  "empreendimento": "Sweet Village",
- "tabela": "Sweet Village Macaé 220x_15 Anuais_Black Friday",
- "idtabela": 48,
- "atualizado_em": "2026-11-10T12:37-03:00",
+ "tabela": "Sweet Village Macaé 24x_Black Friday",
+ "idtabela": 49,
+ "atualizado_em": "2026-11-10T14:47-03:00",
  "lotes": [
+  {
+   "quadra": "Quadra 01",
+   "lote": "2",
+   "area": 746.98,
+   "valor": 914303.52
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "3",
+   "area": 720.56,
+   "valor": 881965.44
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "7",
+   "area": 333.98,
+   "valor": 408791.52
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "8",
+   "area": 300.86,
+   "valor": 368252.64
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "9",
+   "area": 300.54,
+   "valor": 367860.96
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "1",
+   "area": 650.9,
+   "valor": 597526.2
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "2",
+   "area": 644.62,
+   "valor": 591761.16
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "3",
+   "area": 640.81,
+   "valor": 588263.58
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "4",
+   "area": 334.54,
+   "valor": 307107.72
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "5",
+   "area": 326.91,
+   "valor": 300103.38
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "6",
+   "area": 407.35,
+   "valor": 373947.3
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "7",
+   "area": 498.68,
+   "valor": 457788.24
+  },
+  {
+   "quadra": "Quadra 02",
+   "lote": "8",
+   "area": 503.32,
+   "valor": 462047.76
+  },
   {
    "quadra": "Quadra 04",
    "lote": "8",
@@ -104,7 +182,7 @@
    "quadra": "Quadra 05",
    "lote": "24",
    "area": 311.26,
-   "valor": 173990.0
+   "valor": 179990.0
   },
   {
    "quadra": "Quadra 06",
@@ -176,7 +254,7 @@
    "quadra": "Quadra 07",
    "lote": "29",
    "area": 540.97,
-   "valor": 276990.0
+   "valor": 168990.0
   },
   {
    "quadra": "Quadra 08",
