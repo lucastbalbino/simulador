@@ -209,7 +209,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .tv-actions .input { width: 190px; }
 .tv-actions .input select { height: 38px; font-size: 14px; }
 .tv-actions .btn-copy { height: 38px; }
-.tv-actions .copy-status { color: var(--pick-ink); }
+.btn-link { display: inline-grid; place-items: center; text-decoration: none; }
 .btn-sec { height: 38px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--paper); color: var(--ink); font: 600 14px/1 var(--f-body); cursor: pointer; }
 .btn-sec:hover { border-color: var(--muted); }
 .btn-sec:focus-visible, .tv-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -418,8 +418,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
       <div class="tv-actions">
         <div class="input sel"><select id="tvQuadra" aria-label="Filtrar por quadra"><option value="">Todas as quadras</option></select></div>
         <button class="btn-sec" type="button" id="tvPrint" hidden>Imprimir</button>
-        <button class="btn-copy" type="button" id="tvXlsx">Baixar planilha</button>
-        <span class="copy-status" id="tvStatus" aria-live="polite"></span>
+        <a class="btn-copy btn-link" id="tvXlsx" href="tabela-de-vendas.xlsx" download="tabela-de-vendas-sweet-village.xlsx">Baixar planilha</a>
       </div>
     </div>
     <p class="tv-empty" id="tvEmpty">A tabela aparece quando a lista de lotes do CV carregar.</p>
@@ -1053,35 +1052,17 @@ function simularLote(idx) {
   location.hash = 'simulador';
 }
 
-// Imprimir só funciona no site; dentro do Claude a planilha vem pela capability downloads
-if (!hasViewer) $('tvPrint').hidden = false;
+// Imprimir só funciona no site. Dentro do Claude, a planilha abre pelo link do site,
+// que tem sempre a versão mais nova (o artefato não serve arquivos .xlsx)
+if (hasViewer) {
+  $('tvXlsx').href = URL_PLANILHA;
+  $('tvXlsx').removeAttribute('download');
+  $('tvXlsx').target = '_blank';
+  $('tvXlsx').rel = 'noopener';
+} else {
+  $('tvPrint').hidden = false;
+}
 $('tvPrint').addEventListener('click', function () { window.print(); });
-$('tvXlsx').addEventListener('click', function () {
-  var st = $('tvStatus'), btn = this;
-  var limpar = function () { setTimeout(function () { st.textContent = ''; }, 3000); };
-  var abrirNoSite = function () {
-    var a = document.createElement('a');
-    a.href = URL_PLANILHA; a.target = '_blank'; a.rel = 'noopener';
-    document.body.appendChild(a); a.click(); a.remove();
-  };
-  if (!hasViewer) {
-    var a = document.createElement('a');
-    a.href = 'tabela-de-vendas.xlsx'; a.download = 'tabela-de-vendas-sweet-village.xlsx';
-    document.body.appendChild(a); a.click(); a.remove();
-    st.textContent = 'Planilha baixada'; limpar();
-    return;
-  }
-  btn.disabled = true;
-  dlPromise.then(function (dl) {
-    if (!dl) throw new Error('sem downloads');
-    return fetch('tabela-de-vendas.xlsx').then(function (r) { if (!r.ok) throw new Error('sem arquivo'); return r.blob(); })
-      .then(function (blob) { return dl.save({ filename: 'tabela-de-vendas-sweet-village.xlsx', data: blob }); })
-      .then(function () { st.textContent = 'Planilha salva'; limpar(); }, function (err) {
-        if (err && err.code === 'declined') { st.textContent = 'Download cancelado'; limpar(); return; }
-        throw err;
-      });
-  }).catch(abrirNoSite).then(function () { btn.disabled = false; });
-});
 
 // Abas pelo endereço: #simulador ou #tabela
 function mostrarVista() {
