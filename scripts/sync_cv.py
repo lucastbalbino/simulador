@@ -138,7 +138,37 @@ def escolher_tabela(emp):
     return None, False
 
 
+def consultar(ids):
+    """Só leitura: resume tabelas de preço pelo id, sem gravar nada. Usado pelo campo consultar do Run workflow."""
+    base = os.environ.get('CVCRM_BASE_URL') or f'https://{DOMINIO}.cvcrm.com.br'
+    alvos = [('QUADRA 04', '16'), ('QUADRA 04', '10'), ('QUADRA 01', '2')]
+    for idt in ids:
+        url = f'{base}/api/v1/cadastros/empreendimentos/{ID_EMP}/tabelasdepreco/{idt}?tabelasemjson=true'
+        req = urllib.request.Request(url, headers={'email': EMAIL, 'token': TOKEN, 'Accept': 'application/json'})
+        try:
+            with urllib.request.urlopen(req, timeout=90) as r:
+                d = (lista(json.loads(r.read().decode('utf-8'))) or [{}])[0]
+        except urllib.error.HTTPError as e:
+            aviso('notice', f'Consulta tabela {idt}', f'CV respondeu {e.code}')
+            continue
+        unidades = lista(d.get('unidades'))
+        cab = {k: v for k, v in d.items() if not isinstance(v, (list, dict))}
+        exemplos = []
+        for q, l in alvos:
+            u = next((x for x in unidades if str(x.get('bloco') or '').strip().upper() == q and str(x.get('unidade') or '').strip() == l), None)
+            if u:
+                exemplos.append({'quadra': q, 'lote': l, 'situacao': u.get('situacao'), 'valor_total': u.get('valor_total'), 'series': u.get('series')})
+        sit = {}
+        for x in unidades:
+            k = str(x.get('situacao') or '')
+            sit[k] = sit.get(k, 0) + 1
+        aviso('notice', f'Consulta tabela {idt}', json.dumps({'cabecalho': cab, 'situacoes': sit, 'exemplos': exemplos}, ensure_ascii=False)[:3800])
+
+
 def main():
+    if os.environ.get('CVCRM_CONSULTAR', '').strip():
+        consultar([x.strip() for x in os.environ['CVCRM_CONSULTAR'].split(',') if x.strip()])
+        return
     if not EMAIL or not TOKEN:
         aviso('notice', 'CV CRM ainda não configurado',
               'Cadastre os segredos CVCRM_EMAIL e CVCRM_TOKEN no repositório para o robô ler os lotes.')
