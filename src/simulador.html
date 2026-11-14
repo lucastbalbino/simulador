@@ -233,7 +233,17 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
   .masthead { padding-bottom: 6px; }
   .brand img { height: 30px; }
   .tv-wrap { overflow: visible; max-height: none; min-height: 0; border: 0; border-radius: 0; }
-  .tv-table { font-size: 8.5px; }
+  /* Larguras fixas na impressão: sem isso o título longo da última coluna a deixava larga */
+  .tv-table { font-size: 8.5px; table-layout: fixed; width: 100%; }
+  .tv-table col.c-q { width: 4.5%; }
+  .tv-table col.c-l { width: 4%; }
+  .tv-table col.c-a { width: 6%; }
+  .tv-table col.c-v { width: 8%; }
+  .tv-table col.c-s, .tv-table col.c-i { width: 7%; }
+  .tv-table col.c-p { width: 7%; }
+  .tv-table col.c-anu { width: 7.5%; }
+  .tv-table th, .tv-table td { overflow: hidden; text-overflow: clip; }
+  .tv-table thead th { white-space: normal; }
   .tv-table th, .tv-table td { padding: 3px 4px; }
   .tv-table thead tr.g th { height: auto; }
   .tv-table thead { display: table-header-group; }
@@ -944,6 +954,14 @@ function montarTabela() {
   var quando = t && !isNaN(t) ? ' em ' + two(t.getDate()) + '/' + two(t.getMonth() + 1) + '/' + t.getFullYear() + ' às ' + two(t.getHours()) + ':' + two(t.getMinutes()) : '';
   $('tvSub').textContent = 'Lotes disponíveis no CV' + quando + '. Valores em R$, para propostas de ' + mesesNome[hoje.getMonth()] + ' de ' + hoje.getFullYear() +
     ', com sinal à vista no ato e 1ª mensal em ' + monthLabel(1) + '.';
+
+  // Colunas com classes, para a impressão usar larguras fixas
+  var tabela = $('tvTable'), cg = tabela.querySelector('colgroup');
+  if (cg) cg.remove();
+  cg = document.createElement('colgroup');
+  ['c-q', 'c-l', 'c-a', 'c-v', 'c-s', 'c-i'].concat(PLANOS_TABELA.map(function () { return 'c-p'; })).concat(['c-anu'])
+    .forEach(function (c) { var col = document.createElement('col'); col.className = c; cg.appendChild(col); });
+  tabela.insertBefore(cg, tabela.firstChild);
 
   // Cabeçalho em duas linhas: grupos por tipo de plano e o número de mensais
   var head = $('tvHead');
