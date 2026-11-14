@@ -24,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
       - name: Ler lotes do CV CRM
         env:
           CVCRM_EMAIL: ${{ secrets.CVCRM_EMAIL }}
@@ -35,14 +39,19 @@ jobs:
           CVCRM_CONSULTAR: ${{ github.event.inputs.consultar }}
         run: python3 scripts/sync_cv.py
 
-      - name: Publicar se a tabela mudou
+      - name: Gerar a tabela de vendas
         run: |
-          if [ -z "$(git status --porcelain -- data/lotes.json)" ]; then
+          pip install --quiet openpyxl pillow
+          python3 scripts/tabela_vendas.py
+
+      - name: Publicar se algo mudou
+        run: |
+          if [ -z "$(git status --porcelain -- data/lotes.json tabela-de-vendas.xlsx)" ]; then
             echo "Nada para publicar."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/lotes.json
+          git add data/lotes.json tabela-de-vendas.xlsx
           git commit -m "Atualiza lotes do Sweet Village a partir do CV"
           git push

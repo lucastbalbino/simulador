@@ -432,9 +432,10 @@ function aplicarSinalPadrao() {
 // Incentivo de construção (série do CV): 2% do valor de venda em dez/2029, dispensado ao apresentar o habite-se
 var INC_PCT = 0.02, INC_MES = 'dez/29';
 
-// Data da 1ª anual: padrão 31/12 do ano corrente (ou do próximo, se já passou)
+// Data da 1ª anual: padrão 31/12 do ano corrente; em dezembro, 31/12 do ano seguinte,
+// porque a 1ª anual precisa vencer depois do mês do sinal
 function primeiraAnualPadrao() {
-  var h = new Date(), ano = h.getMonth() === 11 && h.getDate() >= 31 ? h.getFullYear() + 1 : h.getFullYear();
+  var h = new Date(), ano = h.getMonth() === 11 ? h.getFullYear() + 1 : h.getFullYear();
   return ano + '-12-31';
 }
 // Meses cheios de calendário entre o mês atual e o mês da data (como o CV conta)
