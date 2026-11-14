@@ -102,6 +102,7 @@ p { margin: 0; }
 .hero-foot { grid-area: foot; display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--hero-line); }
 .hero-k, .hs-k { font-size: 14px; color: var(--on-navy-2); }
 .hero-fig { margin: 4px 0; font: 700 clamp(2.1rem, 4.2vw, 3rem)/1.05 var(--f-body); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.hero-fig.long { font-size: clamp(1.75rem, 3.3vw, 2.4rem); white-space: nowrap; }
 .hero-fig.empty, .hs-v.empty { font-size: 1.3rem; font-weight: 600; letter-spacing: 0; color: var(--on-navy-2); }
 .hero-s, .hs-s { font-size: 14px; color: var(--on-navy-2); }
 .hs-v { margin: 4px 0 2px; font: 700 clamp(1.3rem, 2vw, 1.6rem)/1.15 var(--f-body); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -305,8 +306,8 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
         </div>
         <div class="field">
           <label for="na">Parcelas anuais</label>
-          <div class="input"><input id="na" type="number" inputmode="numeric" min="0" max="50" step="1" value="15"></div>
-          <span class="hint"></span>
+          <div class="input"><input id="na" type="number" inputmode="numeric" min="0" max="50" step="1" value="15" aria-describedby="naHint"></div>
+          <span class="hint" id="naHint"></span>
         </div>
         <div class="field">
           <label for="valAnual">Valor da anual</label>
@@ -326,7 +327,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
       </fieldset>
     </form>
 
-    <p class="foot"><strong>Simulação meramente ilustrativa, sem valor de proposta, oferta ou reserva, que não gera qualquer compromisso da VPA Urbanismo.</strong> Valores e condições sujeitos a alteração e à aprovação da empresa. Sinal sem juros, com a 1ª parcela no ato e as demais a cada 30 dias. Mensais a partir do mês seguinte à última parcela do sinal. Saldo pela Tabela Price, com juros contados a partir da 1ª mensal. Digite a mensal ou a anual e o outro valor é calculado. Valores nominais, sem correção monetária, ITBI ou custos de escritura.</p>
+    <p class="foot"><strong>Simulação meramente ilustrativa, sem valor de proposta, oferta ou reserva, que não gera qualquer compromisso da VPA Urbanismo.</strong> Valores e condições sujeitos a alteração e à aprovação da empresa. Sinal sem juros, com a 1ª parcela no ato e as demais a cada 30 dias. Mensais a partir do mês seguinte à última parcela do sinal. Até 12 mensais, sem juros. De 13 a 24 mensais, com juros. Nesses dois planos não há anuais e o sinal padrão é de 10%. Acima de 24 mensais, digite a mensal ou a anual e o outro valor é calculado. Juros pela Tabela Price, contados a partir da 1ª mensal. Valores nominais, sem correção monetária, ITBI ou custos de escritura.</p>
   </div>
 </div>
 
@@ -416,6 +417,18 @@ var $ = function (id) { return document.getElementById(id); };
 var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
 var JUROS = 0.009, SINAL_PCT = 0.05;
+// Planos curtos (tabelas de 12x e 24x do CV): sem anuais e com sinal padrão de 10%.
+// Até 12 mensais, sem juros; de 13 a 24, com juros de 0,90% a.m. Nenhum plano tem correção.
+var CURTO_SEM_JUROS = 12, CURTO_MAX = 24, SINAL_PCT_CURTO = 0.10, ultimoPlano = null;
+function plano(nm) { return nm >= 1 && nm <= CURTO_SEM_JUROS ? 'semJuros' : nm >= 1 && nm <= CURTO_MAX ? 'curto' : 'longo'; }
+function sinalPct(nm) { return plano(nm) === 'longo' ? SINAL_PCT : SINAL_PCT_CURTO; }
+function nmAtual() { return clampInt($('nm').value, 0, 600, 0); }
+// O sinal acompanha o percentual padrão do plano até o corretor digitar outro valor
+function aplicarSinalPadrao() {
+  if (!sinalAuto) return;
+  var v = parseMoney($('venda').value);
+  $('sinal').value = v > 0 ? fmtMoneyInput(Math.round(v * sinalPct(nmAtual()) * 100) / 100) : '';
+}
 // Incentivo de construção (série do CV): 2% do valor de venda em dez/2029, dispensado ao apresentar o habite-se
 var INC_PCT = 0.02, INC_MES = 'dez/29';
 
@@ -449,16 +462,19 @@ function sinalWhen(ns) {
 function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
 
 function readInputs() {
+  var nm = nmAtual(), pl = plano(nm);
   return {
     V: parseMoney($('venda').value),
     S: parseMoney($('sinal').value),
     ns: parseInt(document.querySelector('input[name="ns"]:checked').value, 10),
-    nm: clampInt($('nm').value, 0, 600, 0),
-    na: clampInt($('na').value, 0, 50, 0),
+    nm: nm,
+    plano: pl,
+    na: pl === 'longo' ? clampInt($('na').value, 0, 50, 0) : 0,
     a0: mesesAte($('a0').value),
     incPct: INC_PCT,
-    i: JUROS,
-    mode: driver,
+    i: pl === 'semJuros' ? 0 : JUROS,
+    // Sem anuais, a mensal é sempre calculada
+    mode: pl === 'longo' ? driver : 'anual',
     A: parseMoney($('valAnual').value),
     M: parseMoney($('valMensal').value)
   };
@@ -466,8 +482,15 @@ function readInputs() {
 
 function render() {
   var p = readInputs();
+  // Ao voltar de um plano curto, a anual digitada volta a mandar e a mensal é calculada
+  if (ultimoPlano && ultimoPlano !== 'longo' && p.plano === 'longo') { driver = 'anual'; p.mode = 'anual'; }
+  ultimoPlano = p.plano;
+  var curto = p.plano !== 'longo';
   $('sinalHint').textContent = p.V > 0 && p.S >= 0 && p.S < p.V ? fmtPct(p.S / p.V, 1) + ' do valor de venda' : '';
-  $('nmHint').textContent = p.nm > 0 ? 'A 1ª vence em ' + monthLabel(p.ns) + '.' : '';
+  $('nmHint').textContent = p.nm > 0 ? 'A 1ª vence em ' + monthLabel(p.ns) + '.' + (p.plano === 'semJuros' ? ' Sem juros.' : p.plano === 'curto' ? ' Com juros.' : '') : '';
+  $('na').disabled = curto;
+  $('naHint').textContent = curto ? 'Sem anuais em até 24x.' : '';
+  $('valMensal').readOnly = curto;
   $('a0Hint').textContent = p.na > 1 ? 'As demais a cada 12 meses.' : '';
   $('a0').disabled = p.na === 0;
   $('inc').value = p.V > 0 ? fmtMoneyInput(Math.round(p.V * INC_PCT * 100) / 100) : '';
@@ -475,7 +498,9 @@ function render() {
   $('valAnual').disabled = p.na === 0;
   $('valMensal').disabled = p.nm === 0;
 
-  var r = calc(p);
+  var r = loteSel && loteSel.ate24 && !curto
+    ? { ok: false, msg: 'Este lote só está nas tabelas de até 24x e à vista do CV. Use até 24 parcelas mensais.' }
+    : calc(p);
   if (!r.ok) {
     $('layout').classList.add('is-stale');
     $('banner').textContent = r.msg;
@@ -490,7 +515,7 @@ function render() {
   lastRes = r; lastP = p;
 
   // O campo que o corretor não digitou recebe o valor calculado
-  var calcM = driver === 'anual', calcA = driver === 'mensal';
+  var calcM = p.mode === 'anual', calcA = p.mode === 'mensal';
   if (calcM && p.nm > 0) $('valMensal').value = fmtMoneyInput(Math.round(r.PMTm * 100) / 100);
   if (calcA && p.na > 0) $('valAnual').value = fmtMoneyInput(Math.round(r.PMTa * 100) / 100);
   $('tagM').textContent = calcM && p.nm > 0 ? 'Calculado' : '';
@@ -502,7 +527,8 @@ function render() {
 
   // Painel da proposta
   if (p.nm > 0) {
-    $('hFig').className = 'hero-fig'; $('hFig').textContent = fmtBRL(r.PMTm);
+    $('hFig').textContent = fmtBRL(r.PMTm);
+    $('hFig').className = 'hero-fig' + ($('hFig').textContent.length > 11 ? ' long' : '');
     $('hSub').textContent = plural(p.nm, 'parcela', 'parcelas');
   } else {
     $('hFig').className = 'hero-fig empty'; $('hFig').textContent = 'Sem parcelas mensais'; $('hSub').textContent = '';
@@ -520,7 +546,7 @@ function render() {
     $('hsI').innerHTML = '<span class="q">1 ×</span>' + fmtBRL(r.inc);
     $('hsIs').textContent = 'Em ' + INC_MES + '. Dispensado com o habite-se.';
   }
-  $('hMeta').textContent = (loteSel ? nomeLoteCompleto(loteSel) + '. ' : '') + 'Valor de venda de ' + fmtBRL(p.V) + ', com juros de ' + fmtPct(p.i, 2) + ' ao mês.' + (r.note ? ' ' + r.note : '');
+  $('hMeta').textContent = (loteSel ? nomeLoteCompleto(loteSel) + '. ' : '') + 'Valor de venda de ' + fmtBRL(p.V) + (p.i > 0 ? ', com juros de ' + fmtPct(p.i, 2) + ' ao mês.' : ', sem juros.') + (r.note ? ' ' + r.note : '');
 
   // Barra no celular
   $('miniV').innerHTML = p.nm > 0 ? '<span class="q">' + p.nm + ' ×</span>' + fmtBRL(r.PMTm) : '<span class="q">' + p.na + ' ×</span>' + fmtBRL(r.PMTa);
@@ -542,7 +568,7 @@ function resumo() {
   if (p.nm) out.push('Mensais: ' + p.nm + 'x de ' + fmtBRL(r.PMTm));
   if (p.na) out.push('Anuais: ' + p.na + 'x de ' + fmtBRL(r.PMTa));
   if (r.inc > 0) out.push('Incentivo de construção: 1x de ' + fmtBRL(r.inc) + ' em ' + INC_MES + ', dispensado ao apresentar o habite-se');
-  out.push('Parcelas com juros de ' + fmtPct(p.i, 2) + ' a.m. já incluídos (Tabela Price).');
+  out.push(p.i > 0 ? 'Parcelas com juros de ' + fmtPct(p.i, 2) + ' a.m. já incluídos (Tabela Price).' : 'Parcelas mensais sem juros.');
   out.push('Valores nominais, sem correção monetária.');
   out.push('Simulação meramente ilustrativa, sem valor de proposta. Não gera qualquer compromisso da VPA Urbanismo.');
   return out.filter(Boolean).join('\n').replace(/ /g, ' ');
@@ -567,7 +593,9 @@ function copyResumo() {
 var LEGAL_A = 'Esta simulação é meramente ilustrativa e tem caráter apenas informativo. Não constitui proposta, oferta, reserva de unidade ou contrato e não gera qualquer compromisso ou obrigação da VPA Urbanismo. Valores, prazos e condições estão sujeitos a alteração sem aviso prévio, à disponibilidade da unidade e à aprovação da empresa no momento da contratação.';
 var LEGAL_B = 'Valores nominais, sem correção monetária, ITBI, custos de escritura e registro.';
 function legalText(p) {
-  return LEGAL_A + ' As parcelas mensais e anuais já incluem juros de ' + fmtPct(p.i, 2) + ' ao mês pela Tabela Price, contados a partir da 1ª parcela mensal. ' + LEGAL_B;
+  var juros = p.i === 0 ? 'As parcelas mensais não têm juros.'
+    : 'As parcelas ' + (p.na > 0 ? 'mensais e anuais' : 'mensais') + ' já incluem juros de ' + fmtPct(p.i, 2) + ' ao mês pela Tabela Price, contados a partir da 1ª parcela mensal.';
+  return LEGAL_A + ' ' + juros + ' ' + LEGAL_B;
 }
 // Dentro do Claude a imagem passa pela confirmação de download; num site próprio ela baixa direto
 var hasViewer = !!(window.claude && typeof window.claude.use === 'function');
@@ -626,7 +654,7 @@ function buildImage() {
       ctx.drawImage(logos[1], xs + 28, y, w2, lh);
     } catch (e) {}
     font(700, 34); text('Simulação de proposta', W - M, y + 34, INK, 'right');
-    font(400, 24); text('Tabela Price', W - M, y + 68, MUTED, 'right');
+    font(400, 24); text(p.i > 0 ? 'Tabela Price' : 'Sem juros', W - M, y + 68, MUTED, 'right');
     y += lh + 36;
     ctx.fillStyle = LINE; ctx.fillRect(M, y, W - 2 * M, 2);
     y += 40;
@@ -761,17 +789,14 @@ $('lote').addEventListener('change', function () {
   $('venda').value = fmtMoneyInput(l.valor);
   $('venda').readOnly = true;
   $('vendaHint').textContent = 'Valor da tabela do CV';
-  $('loteHint').textContent = l.area > 0 ? fmtArea(l.area) : '';
-  if (sinalAuto) $('sinal').value = fmtMoneyInput(Math.round(l.valor * SINAL_PCT * 100) / 100);
+  $('loteHint').textContent = [l.area > 0 ? fmtArea(l.area) : '', l.ate24 ? 'Só até 24x' : ''].filter(Boolean).join('. ');
+  if (l.ate24 && plano(nmAtual()) === 'longo') $('nm').value = String(CURTO_MAX);
+  aplicarSinalPadrao();
   render();
 });
 
-// O sinal acompanha 10% do valor de venda até o corretor digitar outro valor
-$('venda').addEventListener('input', function () {
-  if (!sinalAuto) return;
-  var v = parseMoney(this.value);
-  $('sinal').value = v > 0 ? fmtMoneyInput(Math.round(v * SINAL_PCT * 100) / 100) : '';
-});
+$('venda').addEventListener('input', aplicarSinalPadrao);
+$('nm').addEventListener('input', aplicarSinalPadrao);
 $('sinal').addEventListener('input', function () { sinalAuto = false; });
 $('a0').addEventListener('change', render);
 ['venda', 'sinal', 'nm', 'na', 'a0'].forEach(function (id) {
