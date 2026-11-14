@@ -4,8 +4,8 @@
 Roda no GitHub Actions. O e-mail e o token ficam nos segredos do repositório
 (CVCRM_EMAIL e CVCRM_TOKEN) e nunca vão para o arquivo publicado. O arquivo
 gerado tem só quadra, lote, área e valor total dos lotes disponíveis, lidos da
-tabela de 220x aprovada e vigente. Lotes que só estão na tabela de 24x entram
-com "ate24": true, porque não são vendidos em mais de 24 mensais.
+tabela de 220x aprovada e vigente, mais os lotes disponíveis que só aparecem na
+tabela de 24x (com o preço dela, que é o mesmo). Todos podem ser vendidos em qualquer plano.
 """
 import datetime as dt
 import json
@@ -253,7 +253,7 @@ def main():
         aviso('error', 'Nenhuma tabela de 220x aprovada e vigente',
               'O CV não tem tabela de 220x aprovada e vigente para o Sweet Village. A lista publicada foi mantida.')
         sys.exit(1)
-    # Tabela curta (24x): lotes que só estão nela entram no simulador limitados a 24 mensais
+    # Tabela curta (24x): os lotes disponíveis que só estão nela também entram, sem restrição de plano
     curta = escolher(tabelas, 'CVCRM_TABELA_CURTA', eh_curta, '24x')
 
     lotes_l, situacoes, sem_preco = lotes_da(longa)
@@ -261,7 +261,7 @@ def main():
         aviso('error', 'Tabela sem lotes', f'A tabela {longa.get("idtabela")} não trouxe unidades. A lista publicada foi mantida.')
         sys.exit(1)
     lotes_c = lotes_da(curta)[0] if curta else {}
-    so_curta = [dict(v, ate24=True) for k, v in lotes_c.items() if k not in lotes_l]
+    so_curta = [v for k, v in lotes_c.items() if k not in lotes_l]
     lotes = list(lotes_l.values()) + so_curta
     lotes.sort(key=lambda l: (chave_natural(l['quadra']), chave_natural(l['lote'])))
 
@@ -273,7 +273,7 @@ def main():
           f'Tabela de 220x: {nome_l} (id {idl}, vigência {longa.get("data_vigencia_de", "")} a {longa.get("data_vigencia_ate", "")}). '
           f'Tabela de 24x: {nome_c or "nenhuma"}{f" (id {idc})" if idc else ""}. '
           f'Situações na de 220x: {json.dumps(situacoes, ensure_ascii=False)}. Disponíveis sem preço: {sem_preco}. '
-          f'Lotes publicados: {len(lotes)}, dos quais {len(so_curta)} só nas tabelas curtas (até 24x): '
+          f'Lotes publicados: {len(lotes)}, dos quais {len(so_curta)} vêm só da tabela de 24x: '
           f'{", ".join(l["quadra"] + " L" + l["lote"] for l in so_curta) or "nenhum"}.')
 
     if (anterior and anterior.get('lotes') == lotes and anterior.get('tabela') == nome_l

@@ -214,7 +214,6 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .tv-table td.q, .tv-table td.l { text-align: center; font-weight: 700; }
 .tv-table tbody tr:nth-child(even) td { background: var(--paper-2); }
 .tv-table tbody tr.nq td { border-top: 2px solid var(--navy); }
-.tv-table td.so24 { text-align: center; font-style: italic; color: var(--muted); }
 .tv-table td.anu, .tv-table th.anu { border-left: 2px solid var(--line-strong); }
 .tv-table .sticky { position: sticky; left: 0; z-index: 1; background: var(--paper); }
 .tv-table tbody tr:nth-child(even) td.sticky { background: var(--paper-2); }
@@ -591,9 +590,7 @@ function render() {
   $('valAnual').disabled = p.na === 0;
   $('valMensal').disabled = p.nm === 0;
 
-  var r = loteSel && loteSel.ate24 && !curto
-    ? { ok: false, msg: 'Este lote só está nas tabelas de até 24x e à vista do CV. Use até 24 parcelas mensais.' }
-    : calc(p);
+  var r = calc(p);
   if (!r.ok) {
     $('layout').classList.add('is-stale');
     $('banner').textContent = r.msg;
@@ -886,8 +883,7 @@ $('lote').addEventListener('change', function () {
   $('venda').value = fmtMoneyInput(l.valor);
   $('venda').readOnly = true;
   $('vendaHint').textContent = 'Valor da tabela do CV';
-  $('loteHint').textContent = [l.area > 0 ? fmtArea(l.area) : '', l.ate24 ? 'Só até 24x' : ''].filter(Boolean).join('. ');
-  if (l.ate24 && plano(nmAtual()) === 'longo') $('nm').value = String(CURTO_MAX);
+  $('loteHint').textContent = l.area > 0 ? fmtArea(l.area) : '';
   aplicarSinalPadrao();
   render();
 });
@@ -934,9 +930,9 @@ function valoresTabela(l) {
   return {
     S: S, inc: round2(V * INC_PCT),
     planos: PLANOS_TABELA.map(function (n) {
-      return l.ate24 && n > CURTO_MAX ? null : mensal(n, 0, n <= CURTO_SEM_JUROS ? 0 : JUROS);
+      return mensal(n, 0, n <= CURTO_SEM_JUROS ? 0 : JUROS);
     }),
-    anuais: l.ate24 ? null : mensal(PLANO_ANUAIS_TABELA, parseInt($('na').defaultValue, 10), JUROS)
+    anuais: mensal(PLANO_ANUAIS_TABELA, parseInt($('na').defaultValue, 10), JUROS)
   };
 }
 
@@ -997,10 +993,8 @@ function montarTabela() {
     cl.appendChild(go);
     td(l.area > 0 ? fmtArea(l.area).replace(' m²', '') : '');
     td(fmtMoneyInput(l.valor)); td(fmtMoneyInput(v.S)); td(fmtMoneyInput(v.inc));
-    var longos = 0;
-    v.planos.forEach(function (x) { if (x === null) longos++; else td(fmtMoneyInput(x)); });
-    if (l.ate24) td('Lote vendido só em até ' + CURTO_MAX + 'x ou à vista', 'so24', longos + 1);
-    else td(v.anuais === null ? '' : fmtMoneyInput(v.anuais), 'anu');
+    v.planos.forEach(function (x) { td(x === null ? '' : fmtMoneyInput(x)); });
+    td(v.anuais === null ? '' : fmtMoneyInput(v.anuais), 'anu');
   });
 
   // Notas

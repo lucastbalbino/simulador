@@ -256,33 +256,25 @@ def montar(dados, r, hoje):
         ws.cell(row=lin, column=6, value=f'=ROUND(D{lin}*{P}$C$6,2)')
         cache[('Tabela de vendas', f'E{lin}')] = s
         cache[('Tabela de vendas', f'F{lin}')] = inc
-        so_curto = bool(l.get('ate24'))
         for k, n in enumerate(PLANOS, start=7):
             L = get_column_letter(k)
-            if so_curto and n > r['curto_max']:
-                continue
             ws.cell(row=lin, column=k, value=(
                 f'=ROUND(IF({L}$6<={P}$C$7,(D{lin}-E{lin}-F{lin})/{L}$6,'
                 f'PMT({P}$C$4,{L}$6,-(D{lin}-E{lin}-F{lin}),0,1)),2)'))
             cache[('Tabela de vendas', f'{L}{lin}')] = arred(pmt_antecipada(0 if n <= r['sem_juros_ate'] else i, n, saldo))
-        if not so_curto:
-            ws.cell(row=lin, column=ncol, value=(
-                f'=ROUND(PMT({P}$C$4,{ultima}$6,-(D{lin}-E{lin}-F{lin}-{P}$C$8*{P}$C$11),0,1),2)'))
-            cache[('Tabela de vendas', f'{ultima}{lin}')] = arred(pmt_antecipada(i, PLANO_ANUAIS, saldo - r['anual'] * fator_anuais))
-        else:
-            ws.merge_cells(start_row=lin, start_column=9, end_row=lin, end_column=ncol)
-            ws.cell(row=lin, column=9, value=f'Lote vendido só em até {r["curto_max"]}x ou à vista')
+        ws.cell(row=lin, column=ncol, value=(
+            f'=ROUND(PMT({P}$C$4,{ultima}$6,-(D{lin}-E{lin}-F{lin}-{P}$C$8*{P}$C$11),0,1),2)'))
+        cache[('Tabela de vendas', f'{ultima}{lin}')] = arred(pmt_antecipada(i, PLANO_ANUAIS, saldo - r['anual'] * fator_anuais))
         # estilo da linha
         fundo = PatternFill('solid', fgColor=ZEBRA) if idx % 2 else None
         topo = forte if quadra_ant is not None and q != quadra_ant else fino
         for col in range(1, ncol + 1):
             c = ws.cell(row=lin, column=col)
-            c.font = Font(name=ARIAL, size=9, bold=col in (1, 2), italic=so_curto and col >= 9,
-                          color=CINZA if so_curto and col >= 9 else '000000')
+            c.font = Font(name=ARIAL, size=9, bold=col in (1, 2))
             c.border = Border(left=fino, right=fino, top=topo, bottom=fino)
             if fundo:
                 c.fill = fundo
-            if col <= 2 or (so_curto and col >= 9):
+            if col <= 2:
                 c.alignment = Alignment(horizontal='center', vertical='center')
             elif col >= 5:
                 c.number_format = '#,##0.00'
@@ -375,7 +367,7 @@ def main():
     # Assinatura: lotes, regras e mês de referência. Igual à do arquivo atual, nada muda.
     base = json.dumps({'lotes': dados['lotes'], 'atualizado': dados.get('atualizado_em'),
                        'regras': {k: v for k, v in r.items() if not k.startswith('logo')},
-                       'mes': f'{hoje:%Y-%m}', 'versao': 2}, sort_keys=True)
+                       'mes': f'{hoje:%Y-%m}', 'versao': 3}, sort_keys=True)
     assinatura = hashlib.sha256(base.encode()).hexdigest()[:16]
     if SAIDA.exists():
         try:
@@ -389,7 +381,7 @@ def main():
     wb.custom_doc_props.append(StringProperty(name='assinatura', value=assinatura))
     gravar_com_valores(wb, cache, SAIDA)
     n = len(dados['lotes'])
-    print(f'tabela-de-vendas.xlsx gerada com {n} lotes ({sum(1 for l in dados["lotes"] if l.get("ate24"))} só até 24x).')
+    print(f'tabela-de-vendas.xlsx gerada com {n} lotes.')
 
 
 if __name__ == '__main__':
