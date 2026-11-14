@@ -5,7 +5,9 @@ Lê os lotes disponíveis de data/lotes.json (gerado pelo robô do CV) e as regr
 simulador em src/simulador.html, para que a tabela e o simulador deem os mesmos valores.
 Cada lote tem sinal de 5%, incentivo de construção de 2% em dez/29 e a mensal de cada
 plano: 12x sem juros, 24x a 220x só com mensais e 220x com 15 anuais, com juros de 0,90%
-ao mês pela Tabela Price contados a partir da 1ª mensal.
+ao mês pela Tabela Price contados a partir da 1ª mensal. Acima de 24x as parcelas têm
+correção pelo IPCA, que a tabela não inclui. Os planos, o sinal da tabela e as regras vêm
+das constantes de src/simulador.html, a mesma fonte da aba "Tabela de vendas" do simulador.
 
 As parcelas são fórmulas do Excel. O script grava também o valor já calculado de cada
 fórmula, para a planilha aparecer completa em visualizadores de celular que não calculam.
@@ -39,9 +41,6 @@ MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'a
          'setembro', 'outubro', 'novembro', 'dezembro']
 MES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
-PLANOS = [12, 24, 48, 82, 130, 162, 200, 220]   # só mensais
-PLANO_ANUAIS = 220                              # última coluna: mensais mais anuais
-SINAL_TABELA = 0.05                             # decisão do Lucas: na tabela o sinal é sempre 5%
 
 NAVY = '1F3A71'
 NAVY_CLARO = 'DCE3F0'
@@ -61,11 +60,18 @@ def regras_do_simulador():
             sys.exit(f'Não achei {padrao} em src/simulador.html')
         return float(m.group(1).replace('.', '').replace(',', '.')) if ',' in m.group(1) else float(m.group(1))
 
+    planos = re.search(r'PLANOS_TABELA = \[([\d,\s]+)\]', s)
+    if not planos:
+        sys.exit('Não achei PLANOS_TABELA em src/simulador.html')
     logos = re.findall(r'<img class="logo-color" src="data:image/png;base64,([^"]+)"', s)
     return {
         'juros': num(r'var JUROS = ([\d.]+)'),
         'inc': num(r'INC_PCT = ([\d.]+)'),
         'sem_juros_ate': int(num(r'CURTO_SEM_JUROS = (\d+)')),
+        'curto_max': int(num(r'CURTO_MAX = (\d+)')),
+        'sinal_tabela': num(r'var SINAL_TABELA = ([\d.]+)'),
+        'planos': [int(x) for x in planos.group(1).replace(' ', '').split(',') if x],
+        'plano_anuais': int(num(r'PLANO_ANUAIS_TABELA = (\d+)')),
         'anual': num(r'id="valAnual"[^>]*value="([\d.,]+)"'),
         'n_anuais': int(num(r'id="na"[^>]*value="(\d+)"')),
         'inc_mes': re.search(r"INC_MES = '([^']+)'", s).group(1),
@@ -100,6 +106,7 @@ def referencia(hoje):
 
 def montar(dados, r, hoje):
     lotes = dados['lotes']
+    PLANOS, PLANO_ANUAIS, SINAL_TABELA = r['planos'], r['plano_anuais'], r['sinal_tabela']
     deslocamento, mes_anual, mes_1a_mensal = referencia(hoje)
     i = r['juros']
     fator_anuais = (1 - (1 + i) ** (-12 * r['n_anuais'])) / (1 - (1 + i) ** -12) * (1 + i) ** -deslocamento
@@ -131,7 +138,7 @@ def montar(dados, r, hoje):
         pr[f'{c}3'].fill = PatternFill('solid', fgColor=NAVY)
     linhas = [
         ('Juros ao mês', i, '0.00%', 'Simulador e tabelas do CV (0,90% a.m.)'),
-        ('Sinal, em % do valor de venda', SINAL_TABELA, '0%', 'Definido pelo Lucas para a tabela impressa'),
+        ('Sinal, em % do valor de venda', SINAL_TABELA, '0%', 'Definido pelo Lucas para a tabela de vendas'),
         ('Incentivo de construção, em % do valor', r['inc'], '0%', f'Simulador e CV: parcela única em {r["inc_mes"]}, dispensada com o habite-se'),
         ('Sem juros até (mensais)', r['sem_juros_ate'], '0', 'Definido pelo Lucas: até 12 mensais sem juros'),
         ('Valor de cada anual (R$)', r['anual'], '#,##0.00', 'Padrão do simulador'),
@@ -201,11 +208,22 @@ def montar(dados, r, hoje):
         L = get_column_letter(col)
         ws.merge_cells(f'{L}5:{L}6')
         ws[f'{L}5'] = texto
-    g0, g1 = get_column_letter(7), get_column_letter(6 + len(PLANOS))
-    ws['G5'] = 'Sem juros'
-    ws.merge_cells(f'H5:{g1}5')
-    ws['H5'] = f'Só parcelas mensais, com juros de {i * 100:.2f}% ao mês'.replace('.', ',')
-    ws[f'{ultima}5'] = f'Com {r["n_anuais"]} anuais de R$ {r["anual"]:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+    # Grupos: sem juros; com juros (até 24x); com juros e IPCA (acima de 24x)
+    def categoria(n):
+        return 0 if n <= r['sem_juros_ate'] else 1 if n <= r['curto_max'] else 2
+    rotulos = ['Sem juros', 'Com juros', 'Com juros e IPCA, só mensais']
+    k = 0
+    while k < len(PLANOS):
+        j = k
+        while j < len(PLANOS) and categoria(PLANOS[j]) == categoria(PLANOS[k]):
+            j += 1
+        a, b = get_column_letter(7 + k), get_column_letter(6 + j)
+        if a != b:
+            ws.merge_cells(f'{a}5:{b}5')
+        ws[f'{a}5'] = rotulos[categoria(PLANOS[k])]
+        k = j
+    anual_txt = f'{r["anual"]:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+    ws[f'{ultima}5'] = f'Com juros, IPCA e {r["n_anuais"]} anuais de R$ {anual_txt}'
     for k, n in enumerate(PLANOS + [PLANO_ANUAIS], start=7):
         c = ws.cell(row=6, column=k, value=n)
         c.number_format = '0"x"'
@@ -241,7 +259,7 @@ def montar(dados, r, hoje):
         so_curto = bool(l.get('ate24'))
         for k, n in enumerate(PLANOS, start=7):
             L = get_column_letter(k)
-            if so_curto and n > 24:
+            if so_curto and n > r['curto_max']:
                 continue
             ws.cell(row=lin, column=k, value=(
                 f'=ROUND(IF({L}$6<={P}$C$7,(D{lin}-E{lin}-F{lin})/{L}$6,'
@@ -253,7 +271,7 @@ def montar(dados, r, hoje):
             cache[('Tabela de vendas', f'{ultima}{lin}')] = arred(pmt_antecipada(i, PLANO_ANUAIS, saldo - r['anual'] * fator_anuais))
         else:
             ws.merge_cells(start_row=lin, start_column=9, end_row=lin, end_column=ncol)
-            ws.cell(row=lin, column=9, value='Lote vendido só em até 24x ou à vista')
+            ws.cell(row=lin, column=9, value=f'Lote vendido só em até {r["curto_max"]}x ou à vista')
         # estilo da linha
         fundo = PatternFill('solid', fgColor=ZEBRA) if idx % 2 else None
         topo = forte if quadra_ant is not None and q != quadra_ant else fino
@@ -278,10 +296,11 @@ def montar(dados, r, hoje):
         f'em parcela única em {r["inc_mes"]}, dispensado ao apresentar o habite-se. As mensais quitam o restante.',
         f'Até {r["sem_juros_ate"]} mensais, sem juros. Acima de {r["sem_juros_ate"]} mensais, juros de {i * 100:.2f}% ao mês pela Tabela Price, '
         'contados a partir da 1ª mensal. Nos planos de 24x a 220x as parcelas são só mensais. Na última coluna, '
-        f'{r["n_anuais"]} anuais de R$ {r["anual"]:,.2f} a cada 12 meses, a 1ª em {mes_anual}. '
-        'Parcelas fixas, sem correção monetária.',
+        f'{r["n_anuais"]} anuais de R$ {r["anual"]:,.2f} a cada 12 meses, a 1ª em {mes_anual}.',
+        f'Até {r["curto_max"]}x, as parcelas não têm correção. Acima de {r["curto_max"]}x, as parcelas são corrigidas pelo IPCA, '
+        'e os valores da tabela não incluem essa correção.',
         'No simulador, até 24 mensais o sinal padrão é de 10%, e acima de 24 o padrão tem anuais. Para chegar aos valores '
-        'desta tabela, use sinal de 5% e, nas colunas só de mensais, zero anuais.',
+        'desta tabela, use sinal de 5% e, nas colunas só de mensais, zero anuais. A tabela também está na aba "Tabela de vendas" do simulador.',
         'Tabela meramente ilustrativa, sem valor de proposta, oferta ou reserva, que não gera qualquer compromisso da VPA Urbanismo. '
         'Valores e condições sujeitos a alteração sem aviso prévio, à disponibilidade do lote e à aprovação da empresa. '
         'Não inclui ITBI, custos de escritura e registro.',
@@ -356,7 +375,7 @@ def main():
     # Assinatura: lotes, regras e mês de referência. Igual à do arquivo atual, nada muda.
     base = json.dumps({'lotes': dados['lotes'], 'atualizado': dados.get('atualizado_em'),
                        'regras': {k: v for k, v in r.items() if not k.startswith('logo')},
-                       'planos': PLANOS, 'sinal': SINAL_TABELA, 'mes': f'{hoje:%Y-%m}', 'versao': 1}, sort_keys=True)
+                       'mes': f'{hoje:%Y-%m}', 'versao': 2}, sort_keys=True)
     assinatura = hashlib.sha256(base.encode()).hexdigest()[:16]
     if SAIDA.exists():
         try:
