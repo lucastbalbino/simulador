@@ -1,86 +1,101 @@
 {
  "empreendimento": "Sweet Village",
- "tabela": "Sweet Village Macaé À VISTA_Black Friday",
- "idtabela": 50,
- "atualizado_em": "2026-11-13T17:52-03:00",
+ "tabela": "Sweet Village Macaé 220x_15 Anuais_Black Friday",
+ "idtabela": 48,
+ "tabela_curta": "Sweet Village Macaé 24x_Black Friday",
+ "idtabela_curta": 49,
+ "atualizado_em": "2026-11-14T13:19-03:00",
  "lotes": [
   {
    "quadra": "Quadra 01",
    "lote": "2",
    "area": 746.98,
-   "valor": 914303.52
+   "valor": 914303.52,
+   "ate24": true
   },
   {
    "quadra": "Quadra 01",
    "lote": "3",
    "area": 720.56,
-   "valor": 881965.44
+   "valor": 881965.44,
+   "ate24": true
   },
   {
    "quadra": "Quadra 01",
    "lote": "7",
    "area": 333.98,
-   "valor": 408791.52
+   "valor": 408791.52,
+   "ate24": true
   },
   {
    "quadra": "Quadra 01",
    "lote": "8",
    "area": 300.86,
-   "valor": 368252.64
+   "valor": 368252.64,
+   "ate24": true
   },
   {
    "quadra": "Quadra 01",
    "lote": "9",
    "area": 300.54,
-   "valor": 367860.96
+   "valor": 367860.96,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "1",
    "area": 650.9,
-   "valor": 597526.2
+   "valor": 597526.2,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "2",
    "area": 644.62,
-   "valor": 591761.16
+   "valor": 591761.16,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "3",
    "area": 640.81,
-   "valor": 588263.58
+   "valor": 588263.58,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "4",
    "area": 334.54,
-   "valor": 307107.72
+   "valor": 307107.72,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "5",
    "area": 326.91,
-   "valor": 300103.38
+   "valor": 300103.38,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "6",
    "area": 407.35,
-   "valor": 373947.3
+   "valor": 373947.3,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "7",
    "area": 498.68,
-   "valor": 457788.24
+   "valor": 457788.24,
+   "ate24": true
   },
   {
    "quadra": "Quadra 02",
    "lote": "8",
    "area": 503.32,
-   "valor": 462047.76
+   "valor": 462047.76,
+   "ate24": true
   },
   {
    "quadra": "Quadra 04",
