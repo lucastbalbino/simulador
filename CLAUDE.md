@@ -24,7 +24,7 @@ Sempre publique nos dois lugares juntos.
 ## Regras do simulador
 
 1. Juros fixos de 0,90% a.m. (constante `JUROS` no código) nos planos com juros, sem campo no formulário e sem equivalência anual. A taxa aparece no painel azul e no texto legal.
-2. Sinal em até 3x sem juros. Padrão: 1x e 5% do valor de venda (constante `SINAL_PCT`) acima de 24 mensais e 10% (`SINAL_PCT_CURTO`) até 24 mensais, acompanhando o valor de venda e o plano até o corretor digitar outro sinal.
+2. Sinal sem juros, em até 3x sem aprovação (constante `NS_LIVRE`). Pedido do Lucas em 16/11/2026: o campo "Sinal dividido em" é um número que vai até 12x (`NS_MAX`); acima de 3x o campo fica em destaque de alerta e a dica diz "Mais de 3x. Somente após aprovação da diretoria.", e a imagem e o resumo levam o mesmo aviso. Padrão: 1x e 5% do valor de venda (constante `SINAL_PCT`) acima de 24 mensais e 10% (`SINAL_PCT_CURTO`) até 24 mensais, acompanhando o valor de venda e o plano até o corretor digitar outro sinal.
 3. As mensais começam no mês seguinte à última parcela do sinal. Igual ao CV, os juros contam a partir da 1ª mensal, que sai sem juros, e cada parcela é contada em meses cheios de calendário a partir dela.
 4. Acima de 24 mensais, valor da mensal e valor da anual ficam abertos: o corretor digita um e o outro é calculado para quitar o saldo. Até 24 mensais não há anuais e a mensal é sempre calculada.
 5. Padrões: venda de R$ 179.900,00; sinal de 5%; 220 mensais; 15 anuais de R$ 2.990,00; 1ª anual em 31/12 do ano corrente (31/12/2026 hoje). Em dezembro o padrão passa a 31/12 do ano seguinte, porque a 1ª anual precisa vencer depois do mês do sinal.

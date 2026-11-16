@@ -364,12 +364,8 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
           <span class="hint" id="sinalHint"></span>
         </div>
         <div class="field">
-          <span class="label" id="nsLabel">Sinal dividido em</span>
-          <div class="seg" role="radiogroup" aria-labelledby="nsLabel">
-            <input type="radio" name="ns" id="ns1" value="1" checked><label for="ns1">1x</label>
-            <input type="radio" name="ns" id="ns2" value="2"><label for="ns2">2x</label>
-            <input type="radio" name="ns" id="ns3" value="3"><label for="ns3">3x</label>
-          </div>
+          <label for="ns">Sinal dividido em</label>
+          <div class="input"><input id="ns" type="number" inputmode="numeric" min="1" max="12" step="1" value="1" aria-describedby="nsHint"></div>
           <span class="hint" id="nsHint"></span>
         </div>
       </fieldset>
@@ -461,7 +457,7 @@ function calc(p) {
   var inc = p.incPct > 0 ? round2(p.V * p.incPct) : 0;
   var F = p.V - p.S - inc, i = p.i, t, k;
   if (F <= 0) return fail('O sinal mais o incentivo de construção já cobrem o valor de venda. Reduza o sinal.');
-  var ns = Math.min(3, Math.max(1, p.ns || 1)), sinalParc = [];
+  var ns = Math.min(NS_MAX, Math.max(1, p.ns || 1)), sinalParc = [];
   var sBase = Math.round((p.S / ns) * 100) / 100;
   for (k = 0; k < ns; k++) sinalParc.push(k < ns - 1 ? sBase : Math.round((p.S - sBase * (ns - 1)) * 100) / 100);
 
@@ -528,6 +524,9 @@ var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out
 var vista = 'simulador';
 var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
 var JUROS = 0.009, SINAL_PCT = 0.05;
+// Sinal em até 3x sem aprovação; o corretor pode digitar até 12x, e acima de 3x aparece o aviso da diretoria
+var NS_LIVRE = 3, NS_MAX = 12;
+var AVISO_DIRETORIA = 'somente após aprovação da diretoria';
 // Planos curtos (tabelas de 12x e 24x do CV): sem anuais e com sinal padrão de 10%.
 // Até 12 mensais, sem juros; de 13 a 24, com juros de 0,90% a.m. Nenhum plano tem correção.
 var CURTO_SEM_JUROS = 12, CURTO_MAX = 24, SINAL_PCT_CURTO = 0.10, ultimoPlano = null;
@@ -569,7 +568,8 @@ function span(a, b) { return a === b ? 'em ' + monthLabel(a) : 'de ' + monthLabe
 function sinalWhen(ns) {
   if (ns === 1) return 'à vista, no ato';
   if (ns === 2) return 'sem juros, no ato e em 30 dias';
-  return 'sem juros, no ato, em 30 e em 60 dias';
+  if (ns === 3) return 'sem juros, no ato, em 30 e em 60 dias';
+  return 'sem juros, no ato e as demais a cada 30 dias';
 }
 function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
 
@@ -578,7 +578,7 @@ function readInputs() {
   return {
     V: parseMoney($('venda').value),
     S: parseMoney($('sinal').value),
-    ns: parseInt(document.querySelector('input[name="ns"]:checked').value, 10),
+    ns: clampInt($('ns').value, 1, NS_MAX, 1),
     nm: nm,
     plano: pl,
     na: pl === 'longo' ? clampInt($('na').value, 0, 50, 0) : 0,
@@ -623,7 +623,9 @@ function render() {
     $('layout').classList.add('is-stale');
     $('banner').textContent = r.msg;
     $('banner').hidden = false;
-    $('nsHint').textContent = '';
+    $('nsHint').textContent = p.ns > NS_LIVRE ? 'Mais de ' + NS_LIVRE + 'x. Somente após aprovação da diretoria.' : '';
+    $('nsHint').classList.toggle('warn', p.ns > NS_LIVRE);
+    $('ns').parentNode.classList.toggle('warn', p.ns > NS_LIVRE);
     $(driver === 'anual' ? 'valMensal' : 'valAnual').value = '';
     syncMini();
     return;
@@ -641,7 +643,11 @@ function render() {
   $('wrapM').classList.toggle('is-calc', calcM);
   $('wrapA').classList.toggle('is-calc', calcA);
 
-  $('nsHint').textContent = r.ns === 1 ? 'Pago no ato.' : r.ns + ' × ' + fmtBRL(r.sinalParc[0]) + ' sem juros';
+  var nsAlerta = r.ns > NS_LIVRE;
+  $('nsHint').textContent = nsAlerta ? 'Mais de ' + NS_LIVRE + 'x. Somente após aprovação da diretoria.'
+    : r.ns === 1 ? 'Pago no ato.' : r.ns + ' × ' + fmtBRL(r.sinalParc[0]) + ' sem juros';
+  $('nsHint').classList.toggle('warn', nsAlerta);
+  $('ns').parentNode.classList.toggle('warn', nsAlerta);
 
   // Painel da proposta
   if (p.nm > 0) {
@@ -686,7 +692,8 @@ function resumo() {
       : '',
     r.ns === 1
       ? 'Sinal: ' + fmtBRL(p.S) + ' à vista, no ato'
-      : 'Sinal: ' + fmtBRL(p.S) + ' em ' + r.ns + 'x de ' + fmtBRL(r.sinalParc[0]) + ', ' + sinalWhen(r.ns) + ' (' + span(0, r.ns - 1) + ')'
+      : 'Sinal: ' + fmtBRL(p.S) + ' em ' + r.ns + 'x de ' + fmtBRL(r.sinalParc[0]) + ', ' + sinalWhen(r.ns) + ' (' + span(0, r.ns - 1) + ')' +
+        (r.ns > NS_LIVRE ? '. Sinal em mais de ' + NS_LIVRE + 'x ' + AVISO_DIRETORIA : '')
   ];
   if (p.nm) out.push('Mensais: ' + p.nm + 'x de ' + fmtBRL(r.PMTm));
   if (p.na) out.push('Anuais: ' + p.na + 'x de ' + fmtBRL(r.PMTa));
@@ -800,7 +807,8 @@ function buildImage() {
     rows.push(['Valor de venda', fmtBRL(p.V), dsc && dsc.valor > 0
       ? 'Tabela de ' + fmtBRL(dsc.tabela) + '. Desconto de ' + fmtPct(dsc.pct, 1) + ', somente após aprovação da diretoria.' : '']);
     rows.push(['Sinal', r.ns + ' × ' + fmtBRL(r.sinalParc[0]),
-      r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.']);
+      r.ns === 1 ? 'À vista, no ato (' + monthLabel(0) + '). Sem juros.' : 'Sem juros, ' + span(0, r.ns - 1) + '. Total de ' + fmtBRL(p.S) + '.' +
+        (r.ns > NS_LIVRE ? ' Mais de ' + NS_LIVRE + 'x ' + AVISO_DIRETORIA + '.' : '')]);
     if (p.nm > 0) rows.push(['Parcelas mensais', p.nm + ' × ' + fmtBRL(r.PMTm), '']);
     if (p.na > 0) rows.push(['Parcelas anuais', p.na + ' × ' + fmtBRL(r.PMTa), '']);
     if (r.inc > 0) rows.push(['Incentivo de construção', '1 × ' + fmtBRL(r.inc), 'Em ' + INC_MES + '. Dispensado ao apresentar o habite-se.']);
@@ -929,7 +937,9 @@ $('venda').addEventListener('input', aplicarSinalPadrao);
 $('nm').addEventListener('input', aplicarSinalPadrao);
 $('sinal').addEventListener('input', function () { sinalAuto = false; });
 $('a0').addEventListener('change', render);
-['venda', 'sinal', 'nm', 'na', 'a0'].forEach(function (id) {
+// Ao sair do campo, o número de parcelas do sinal fica entre 1 e o máximo
+$('ns').addEventListener('change', function () { this.value = String(clampInt(this.value, 1, NS_MAX, 1)); render(); });
+['venda', 'sinal', 'ns', 'nm', 'na', 'a0'].forEach(function (id) {
   $(id).addEventListener('input', render);
 });
 $('valAnual').addEventListener('input', function () { driver = 'anual'; render(); });
@@ -937,7 +947,6 @@ $('valMensal').addEventListener('input', function () { driver = 'mensal'; render
 ['venda', 'sinal', 'valAnual', 'valMensal'].forEach(function (id) {
   $(id).addEventListener('blur', function () { var v = parseMoney(this.value); if (this.value.trim() !== '') this.value = fmtMoneyInput(v); });
 });
-document.querySelectorAll('input[name="ns"]').forEach(function (el) { el.addEventListener('change', render); });
 document.querySelectorAll('input[name="incOn"]').forEach(function (el) { el.addEventListener('change', render); });
 $('ficha').addEventListener('submit', function (e) { e.preventDefault(); });
 
