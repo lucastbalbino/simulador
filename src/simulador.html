@@ -816,8 +816,14 @@ function buildImage() {
     rows.forEach(function (row) {
       font(400, 28); text(row[0], M, y + 36, MUTED);
       font(700, 32); text(row[1], W - M, y + 36, INK, 'right');
-      if (row[2]) { font(400, 24); text(row[2], W - M, y + 74, MUTED, 'right'); }
-      y += row[2] ? 98 : 60;
+      // A observação quebra em linhas, alinhadas à direita, para nunca passar da margem
+      var obs = [];
+      if (row[2]) {
+        font(400, 24);
+        obs = wrapLines(ctx, row[2], W - 2 * M - 140);
+        obs.forEach(function (ln, k) { text(ln, W - M, y + 74 + k * 32, MUTED, 'right'); });
+      }
+      y += obs.length ? 98 + (obs.length - 1) * 32 : 60;
       ctx.fillStyle = LINE; ctx.fillRect(M, y, W - 2 * M, 2);
       y += 24;
     });
