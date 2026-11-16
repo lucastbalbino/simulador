@@ -378,7 +378,7 @@ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
         </div>
         <div class="field">
           <label for="ns">Sinal dividido em</label>
-          <div class="input"><input id="ns" type="number" inputmode="numeric" min="1" max="12" step="1" value="1" aria-describedby="nsHint"></div>
+          <div class="input"><input id="ns" type="number" inputmode="numeric" min="1" max="6" step="1" value="1" aria-describedby="nsHint"></div>
           <span class="hint" id="nsHint"></span>
         </div>
       </fieldset>
@@ -537,8 +537,8 @@ var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out
 var vista = 'simulador';
 var lastRes = null, lastP = null, driver = 'anual', sinalAuto = true, LOTES = null, loteSel = null;
 var JUROS = 0.009, SINAL_PCT = 0.05;
-// Sinal em até 3x sem aprovação; o corretor pode digitar até 12x, e acima de 3x aparece o aviso da diretoria
-var NS_LIVRE = 3, NS_MAX = 12;
+// Sinal em até 3x sem aprovação; o corretor pode digitar até 6x, e acima de 3x aparece o aviso da diretoria
+var NS_LIVRE = 3, NS_MAX = 6;
 var AVISO_DIRETORIA = 'somente após aprovação da diretoria';
 // Planos curtos (tabelas de 12x e 24x do CV): sem anuais e com sinal padrão de 10%.
 // Até 12 mensais, sem juros; de 13 a 24, com juros de 0,90% a.m. Nenhum plano tem correção.
