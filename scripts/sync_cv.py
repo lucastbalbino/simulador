@@ -197,8 +197,8 @@ def eh_curta(d):
     return ('24x' in n or str(d.get('plano_parcelamento') or '') == '24') and 'vista' not in n
 
 
-# Decisão do Lucas (21/11/2026): só este motivo aparece no simulador e no arquivo público.
-# Os outros (Reserva VPA, Bloqueio Técnico, Estratégia Comercial) ficam internos.
+# Decisão do Lucas (21/11/2026): dos bloqueados, só os deste motivo entram no simulador.
+# Os outros (Reserva VPA, Bloqueio Técnico, Estratégia Comercial) e os reservados ficam de fora.
 MOTIVOS_PUBLICOS = ('lote caucionado',)
 
 
@@ -227,14 +227,16 @@ def motivos_de_bloqueio(emp):
 def lotes_da(d, motivos):
     """Lotes com preço que podem ser simulados, por (quadra, lote), e a contagem de situações.
 
-    Entram os disponíveis, os bloqueados (com o motivo) e os reservados. Os vendidos ficam de fora.
+    Entram os disponíveis e os bloqueados por um motivo de MOTIVOS_PUBLICOS (com o motivo).
+    Vendidos, reservados e bloqueados por outros motivos ficam de fora.
     """
     lotes, situacoes, sem_preco = {}, {}, 0
     for u in lista(d.get('unidades')):
         sit = str(u.get('situacao') or '').strip()
         situacoes[sit] = situacoes.get(sit, 0) + 1
         s = normalizar(sit)
-        if not s.startswith(('dispon', 'bloq', 'reserv')):
+        motivo = motivos.get(str(u.get('idunidade')), '') if s.startswith('bloq') else ''
+        if not (s.startswith('dispon') or (s.startswith('bloq') and normalizar(motivo) in MOTIVOS_PUBLICOS)):
             continue
         valor = round(numero(u.get('valor_total')), 2)
         if valor <= 0:
@@ -248,11 +250,7 @@ def lotes_da(d, motivos):
         }
         if s.startswith('bloq'):
             lote['situacao'] = 'Bloqueado'
-            motivo = motivos.get(str(u.get('idunidade')), '')
-            if normalizar(motivo) in MOTIVOS_PUBLICOS:
-                lote['motivo'] = motivo
-        elif s.startswith('reserv'):
-            lote['situacao'] = 'Reservado'
+            lote['motivo'] = motivo
         lotes[(lote['quadra'], lote['lote'])] = lote
     return lotes, situacoes, sem_preco
 
@@ -322,8 +320,7 @@ def main():
           f'Tabela de 220x: {nome_l} (id {idl}, vigência {longa.get("data_vigencia_de", "")} a {longa.get("data_vigencia_ate", "")}). '
           f'Tabela de 24x: {nome_c or "nenhuma"}{f" (id {idc})" if idc else ""}. '
           f'Situações na de 220x: {json.dumps(situacoes, ensure_ascii=False)}. Sem preço (fora do simulador): {sem_preco}. '
-          f'Bloqueados por motivo: {json.dumps(contar_motivos(lotes), ensure_ascii=False)}. '
-          f'Reservados: {sum(1 for l in lotes if l.get("situacao") == "Reservado")}. '
+          f'Bloqueados no simulador: {json.dumps(contar_motivos(lotes), ensure_ascii=False)}. '
           f'Lotes publicados: {len(lotes)}, dos quais {len(so_curta)} vêm só da tabela de 24x: '
           f'{", ".join(l["quadra"] + " L" + l["lote"] for l in so_curta) or "nenhum"}.')
 
