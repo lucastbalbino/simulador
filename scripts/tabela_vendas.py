@@ -359,6 +359,8 @@ def gravar_com_valores(wb, cache, destino):
 
 def main():
     dados = json.loads(LOTES.read_text(encoding='utf-8'))
+    # A tabela de vendas lista só os lotes disponíveis; bloqueados e reservados ficam só no simulador
+    dados['lotes'] = [l for l in dados.get('lotes') or [] if not l.get('situacao')]
     if not dados.get('lotes'):
         print('Sem lotes em data/lotes.json. Tabela não gerada.')
         return

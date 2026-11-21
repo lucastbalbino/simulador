@@ -197,13 +197,39 @@ def eh_curta(d):
     return ('24x' in n or str(d.get('plano_parcelamento') or '') == '24') and 'vista' not in n
 
 
-def lotes_da(d):
-    """Lotes disponíveis com preço, por (quadra, lote), e a contagem de situações."""
+def motivos_de_bloqueio(emp):
+    """idunidade -> motivo do bloqueio, lido do cadastro do empreendimento.
+
+    O CV guarda o motivo em situacao.bloqueada_motivo, escolhido de uma lista fixa
+    ("Lote Caucionado", "Reserva VPA"). Só esse nome é publicado, nunca texto livre.
+    """
+    mapa = {}
+
+    def andar(o):
+        if isinstance(o, dict):
+            sit = o.get('situacao')
+            if o.get('idunidade') is not None and isinstance(sit, dict) and str(sit.get('bloqueada') or '').upper() == 'S':
+                mapa[str(o['idunidade'])] = ' '.join(str(sit.get('bloqueada_motivo') or '').split())[:60]
+            for v in o.values():
+                andar(v)
+        elif isinstance(o, list):
+            for v in o:
+                andar(v)
+    andar(emp)
+    return mapa
+
+
+def lotes_da(d, motivos):
+    """Lotes com preço que podem ser simulados, por (quadra, lote), e a contagem de situações.
+
+    Entram os disponíveis, os bloqueados (com o motivo) e os reservados. Os vendidos ficam de fora.
+    """
     lotes, situacoes, sem_preco = {}, {}, 0
     for u in lista(d.get('unidades')):
         sit = str(u.get('situacao') or '').strip()
         situacoes[sit] = situacoes.get(sit, 0) + 1
-        if not sit.lower().startswith('dispon'):
+        s = normalizar(sit)
+        if not s.startswith(('dispon', 'bloq', 'reserv')):
             continue
         valor = round(numero(u.get('valor_total')), 2)
         if valor <= 0:
@@ -215,8 +241,22 @@ def lotes_da(d):
             'area': round(numero(u.get('area_privativa')), 2),
             'valor': valor,
         }
+        if s.startswith('bloq'):
+            lote['situacao'] = 'Bloqueado'
+            lote['motivo'] = motivos.get(str(u.get('idunidade')), '')
+        elif s.startswith('reserv'):
+            lote['situacao'] = 'Reservado'
         lotes[(lote['quadra'], lote['lote'])] = lote
     return lotes, situacoes, sem_preco
+
+
+def contar_motivos(lotes):
+    c = {}
+    for l in lotes:
+        if l.get('situacao') == 'Bloqueado':
+            m = l.get('motivo') or 'sem motivo'
+            c[m] = c.get(m, 0) + 1
+    return c
 
 
 def exemplo_series(d):
@@ -243,7 +283,9 @@ def main():
         except (ValueError, OSError):
             anterior = None
 
-    emp = buscar(f'/v1/cadastros/empreendimentos/{ID_EMP}?limite_dados_unidade=1&pagina_unidade=1')
+    # Todas as unidades, para ler o motivo de cada bloqueio
+    emp = buscar(f'/v1/cadastros/empreendimentos/{ID_EMP}?limite_dados_unidade=1000&pagina_unidade=1')
+    motivos = motivos_de_bloqueio(emp)
     tabelas = descobrir(emp, anterior)
 
     # Tabela longa (220 mensais com anuais): dá os preços e os lotes do simulador
@@ -256,11 +298,11 @@ def main():
     # Tabela curta (24x): os lotes disponíveis que só estão nela também entram, sem restrição de plano
     curta = escolher(tabelas, 'CVCRM_TABELA_CURTA', eh_curta, '24x')
 
-    lotes_l, situacoes, sem_preco = lotes_da(longa)
+    lotes_l, situacoes, sem_preco = lotes_da(longa, motivos)
     if not lista(longa.get('unidades')):
         aviso('error', 'Tabela sem lotes', f'A tabela {longa.get("idtabela")} não trouxe unidades. A lista publicada foi mantida.')
         sys.exit(1)
-    lotes_c = lotes_da(curta)[0] if curta else {}
+    lotes_c = lotes_da(curta, motivos)[0] if curta else {}
     so_curta = [v for k, v in lotes_c.items() if k not in lotes_l]
     lotes = list(lotes_l.values()) + so_curta
     lotes.sort(key=lambda l: (chave_natural(l['quadra']), chave_natural(l['lote'])))
@@ -272,7 +314,9 @@ def main():
     aviso('notice', 'Leitura do CV concluída',
           f'Tabela de 220x: {nome_l} (id {idl}, vigência {longa.get("data_vigencia_de", "")} a {longa.get("data_vigencia_ate", "")}). '
           f'Tabela de 24x: {nome_c or "nenhuma"}{f" (id {idc})" if idc else ""}. '
-          f'Situações na de 220x: {json.dumps(situacoes, ensure_ascii=False)}. Disponíveis sem preço: {sem_preco}. '
+          f'Situações na de 220x: {json.dumps(situacoes, ensure_ascii=False)}. Sem preço (fora do simulador): {sem_preco}. '
+          f'Bloqueados por motivo: {json.dumps(contar_motivos(lotes), ensure_ascii=False)}. '
+          f'Reservados: {sum(1 for l in lotes if l.get("situacao") == "Reservado")}. '
           f'Lotes publicados: {len(lotes)}, dos quais {len(so_curta)} vêm só da tabela de 24x: '
           f'{", ".join(l["quadra"] + " L" + l["lote"] for l in so_curta) or "nenhum"}.')
 

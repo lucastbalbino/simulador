@@ -698,7 +698,7 @@ function resumo() {
   var r = lastRes, p = lastP, am = r.annualMonths, out = [
     'Sweet Village · VPA Urbanismo',
     'Simulação de proposta',
-    loteSel ? 'Lote: ' + nomeLoteCompleto(loteSel) + (loteSel.area > 0 ? ' (' + fmtArea(loteSel.area) + ')' : '') : '',
+    loteSel ? 'Lote: ' + nomeLoteCompleto(loteSel) + (loteSel.area > 0 ? ' (' + fmtArea(loteSel.area) + ')' : '') + (loteSel.situacao ? '. ' + notaLote(loteSel) : '') : '',
     'Valor de venda: ' + fmtBRL(p.V),
     descontoLote(p) && descontoLote(p).valor > 0
       ? 'Valor de tabela: ' + fmtBRL(loteSel.valor) + '. Desconto de ' + fmtBRL(descontoLote(p).valor) + ' (' + fmtPct(descontoLote(p).pct, 1) + '), somente após aprovação da diretoria.'
@@ -815,7 +815,7 @@ function buildImage() {
 
     // Condições linha a linha
     var rows = [];
-    if (loteSel) rows.push(['Lote', nomeLoteCompleto(loteSel), loteSel.area > 0 ? 'Área de ' + fmtArea(loteSel.area) + '.' : '']);
+    if (loteSel) rows.push(['Lote', nomeLoteCompleto(loteSel), [loteSel.area > 0 ? 'Área de ' + fmtArea(loteSel.area) + '.' : '', notaLote(loteSel)].filter(Boolean).join(' ')]);
     var dsc = descontoLote(p);
     rows.push(['Valor de venda', fmtBRL(p.V), dsc && dsc.valor > 0
       ? 'Tabela de ' + fmtBRL(dsc.tabela) + '. Desconto de ' + fmtPct(dsc.pct, 1) + ', somente após aprovação da diretoria.' : '']);
@@ -925,9 +925,19 @@ function descontoLote(p) {
   var d = round2(loteSel.valor - p.V);
   return Math.abs(d) < 0.005 ? null : { valor: d, pct: d / loteSel.valor, tabela: loteSel.valor };
 }
+// Lotes bloqueados e reservados no CV também podem ser simulados, com alerta
+function alertaLote(l) {
+  if (!l || !l.situacao) return '';
+  if (l.situacao === 'Bloqueado') return 'Bloqueado no CV' + (l.motivo ? ' (' + l.motivo + ')' : '') + '.';
+  return l.situacao + ' no CV.';
+}
+function notaLote(l) {
+  return l && l.situacao ? 'Lote ' + l.situacao.toLowerCase() + ' no momento, sujeito a liberação da VPA Urbanismo.' : '';
+}
 function soltarLote() {
   loteSel = null;
   $('loteHint').textContent = '';
+  $('loteHint').classList.remove('warn');
 }
 $('quadra').addEventListener('change', function () {
   var q = this.value, sel = $('lote');
@@ -938,7 +948,7 @@ $('quadra').addEventListener('change', function () {
   LOTES.lotes.map(function (l, i) { return { l: l, i: i }; })
     .filter(function (x) { return x.l.quadra === q; })
     .sort(function (a, b) { return ordenar(a.l.lote, b.l.lote); })
-    .forEach(function (x) { sel.add(new Option(x.l.lote, String(x.i))); });
+    .forEach(function (x) { sel.add(new Option(x.l.lote + (x.l.situacao ? ' (' + x.l.situacao.toLowerCase() + ')' : ''), String(x.i))); });
   sel.disabled = false;
   render();
 });
@@ -947,7 +957,8 @@ $('lote').addEventListener('change', function () {
   var l = LOTES.lotes[+this.value];
   loteSel = l;
   $('venda').value = fmtMoneyInput(l.valor);
-  $('loteHint').textContent = l.area > 0 ? fmtArea(l.area) : '';
+  $('loteHint').textContent = [alertaLote(l), l.area > 0 ? fmtArea(l.area) : ''].filter(Boolean).join(' ');
+  $('loteHint').classList.toggle('warn', !!l.situacao);
   aplicarSinalPadrao();
   render();
 });
@@ -1044,7 +1055,7 @@ function montarTabela() {
 
   // Filtro por quadra
   var sel = $('tvQuadra'), quadras = [];
-  LOTES.lotes.forEach(function (l) { if (quadras.indexOf(l.quadra) < 0) quadras.push(l.quadra); });
+  LOTES.lotes.forEach(function (l) { if (!l.situacao && quadras.indexOf(l.quadra) < 0) quadras.push(l.quadra); });
   quadras.sort(ordenar);
   sel.length = 1;
   quadras.forEach(function (q) { sel.add(new Option(q, q)); });
@@ -1053,6 +1064,7 @@ function montarTabela() {
   var body = $('tvBody'), qAnt = null;
   body.innerHTML = '';
   LOTES.lotes.forEach(function (l, idx) {
+    if (l.situacao) return; // a tabela de vendas lista só os lotes disponíveis
     var v = valoresTabela(l), tr = body.insertRow();
     tr.dataset.quadra = l.quadra;
     if (qAnt !== null && l.quadra !== qAnt) tr.className = 'nq';
