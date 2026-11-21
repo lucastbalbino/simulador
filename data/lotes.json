@@ -4,15 +4,8 @@
  "idtabela": 48,
  "tabela_curta": "Sweet Village Macaé 24x_Black Friday",
  "idtabela_curta": 49,
- "atualizado_em": "2026-11-21T11:10-03:00",
+ "atualizado_em": "2026-11-21T12:52-03:00",
  "lotes": [
-  {
-   "quadra": "Quadra 01",
-   "lote": "1",
-   "area": 441.61,
-   "valor": 540530.64,
-   "situacao": "Bloqueado"
-  },
   {
    "quadra": "Quadra 01",
    "lote": "2",
@@ -24,27 +17,6 @@
    "lote": "3",
    "area": 720.56,
    "valor": 881965.44
-  },
-  {
-   "quadra": "Quadra 01",
-   "lote": "4",
-   "area": 437.03,
-   "valor": 534924.72,
-   "situacao": "Bloqueado"
-  },
-  {
-   "quadra": "Quadra 01",
-   "lote": "5",
-   "area": 439.43,
-   "valor": 537862.32,
-   "situacao": "Bloqueado"
-  },
-  {
-   "quadra": "Quadra 01",
-   "lote": "6",
-   "area": 460.14,
-   "valor": 563211.36,
-   "situacao": "Bloqueado"
   },
   {
    "quadra": "Quadra 01",
@@ -111,13 +83,6 @@
    "lote": "8",
    "area": 503.32,
    "valor": 462047.76
-  },
-  {
-   "quadra": "Quadra 03",
-   "lote": "3",
-   "area": 301.14,
-   "valor": 228990.0,
-   "situacao": "Bloqueado"
   },
   {
    "quadra": "Quadra 03",
@@ -389,13 +354,6 @@
   },
   {
    "quadra": "Quadra 04",
-   "lote": "16",
-   "area": 302.81,
-   "valor": 164990.0,
-   "situacao": "Reservado"
-  },
-  {
-   "quadra": "Quadra 04",
    "lote": "19",
    "area": 326.05,
    "valor": 181990.0
@@ -405,13 +363,6 @@
    "lote": "23",
    "area": 307.37,
    "valor": 179990.0
-  },
-  {
-   "quadra": "Quadra 04",
-   "lote": "27",
-   "area": 313.78,
-   "valor": 176990.0,
-   "situacao": "Bloqueado"
   },
   {
    "quadra": "Quadra 05",
@@ -484,13 +435,6 @@
    "lote": "24",
    "area": 311.26,
    "valor": 179990.0
-  },
-  {
-   "quadra": "Quadra 06",
-   "lote": "3",
-   "area": 301.87,
-   "valor": 176990.0,
-   "situacao": "Reservado"
   },
   {
    "quadra": "Quadra 07",
@@ -605,20 +549,6 @@
    "lote": "9",
    "area": 302.27,
    "valor": 164990.0
-  },
-  {
-   "quadra": "Quadra 08",
-   "lote": "33",
-   "area": 583.53,
-   "valor": 364836.12,
-   "situacao": "Bloqueado"
-  },
-  {
-   "quadra": "Quadra 09",
-   "lote": "32",
-   "area": 289.26,
-   "valor": 222990.0,
-   "situacao": "Bloqueado"
   },
   {
    "quadra": "Quadra 09",
@@ -780,20 +710,6 @@
   },
   {
    "quadra": "Quadra 10",
-   "lote": "15",
-   "area": 300.0,
-   "valor": 203388.0,
-   "situacao": "Bloqueado"
-  },
-  {
-   "quadra": "Quadra 10",
-   "lote": "16",
-   "area": 300.0,
-   "valor": 203388.0,
-   "situacao": "Bloqueado"
-  },
-  {
-   "quadra": "Quadra 10",
    "lote": "17",
    "area": 300.0,
    "valor": 203388.0,
@@ -899,20 +815,6 @@
    "lote": "37",
    "area": 325.85,
    "valor": 207990.0
-  },
-  {
-   "quadra": "Quadra 11",
-   "lote": "5",
-   "area": 285.66,
-   "valor": 232990.0,
-   "situacao": "Bloqueado"
-  },
-  {
-   "quadra": "Quadra 11",
-   "lote": "6",
-   "area": 282.46,
-   "valor": 232990.0,
-   "situacao": "Bloqueado"
   },
   {
    "quadra": "Quadra 11",
