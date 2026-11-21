@@ -197,6 +197,11 @@ def eh_curta(d):
     return ('24x' in n or str(d.get('plano_parcelamento') or '') == '24') and 'vista' not in n
 
 
+# Decisão do Lucas (21/11/2026): só este motivo aparece no simulador e no arquivo público.
+# Os outros (Reserva VPA, Bloqueio Técnico, Estratégia Comercial) ficam internos.
+MOTIVOS_PUBLICOS = ('lote caucionado',)
+
+
 def motivos_de_bloqueio(emp):
     """idunidade -> motivo do bloqueio, lido do cadastro do empreendimento.
 
@@ -243,7 +248,9 @@ def lotes_da(d, motivos):
         }
         if s.startswith('bloq'):
             lote['situacao'] = 'Bloqueado'
-            lote['motivo'] = motivos.get(str(u.get('idunidade')), '')
+            motivo = motivos.get(str(u.get('idunidade')), '')
+            if normalizar(motivo) in MOTIVOS_PUBLICOS:
+                lote['motivo'] = motivo
         elif s.startswith('reserv'):
             lote['situacao'] = 'Reservado'
         lotes[(lote['quadra'], lote['lote'])] = lote
@@ -254,7 +261,7 @@ def contar_motivos(lotes):
     c = {}
     for l in lotes:
         if l.get('situacao') == 'Bloqueado':
-            m = l.get('motivo') or 'sem motivo'
+            m = l.get('motivo') or 'outros motivos'
             c[m] = c.get(m, 0) + 1
     return c
 
