@@ -4,8 +4,16 @@
  "idtabela": 48,
  "tabela_curta": "Sweet Village Macaé 24x_Black Friday",
  "idtabela_curta": 49,
- "atualizado_em": "2026-11-18T11:55-03:00",
+ "atualizado_em": "2026-11-21T11:04-03:00",
  "lotes": [
+  {
+   "quadra": "Quadra 01",
+   "lote": "1",
+   "area": 441.61,
+   "valor": 540530.64,
+   "situacao": "Bloqueado",
+   "motivo": "Bloqueio Técnico"
+  },
   {
    "quadra": "Quadra 01",
    "lote": "2",
@@ -17,6 +25,30 @@
    "lote": "3",
    "area": 720.56,
    "valor": 881965.44
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "4",
+   "area": 437.03,
+   "valor": 534924.72,
+   "situacao": "Bloqueado",
+   "motivo": "Bloqueio Técnico"
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "5",
+   "area": 439.43,
+   "valor": 537862.32,
+   "situacao": "Bloqueado",
+   "motivo": "Bloqueio Técnico"
+  },
+  {
+   "quadra": "Quadra 01",
+   "lote": "6",
+   "area": 460.14,
+   "valor": 563211.36,
+   "situacao": "Bloqueado",
+   "motivo": "Bloqueio Técnico"
   },
   {
    "quadra": "Quadra 01",
@@ -85,6 +117,270 @@
    "valor": 462047.76
   },
   {
+   "quadra": "Quadra 03",
+   "lote": "3",
+   "area": 301.14,
+   "valor": 228990.0,
+   "situacao": "Bloqueado",
+   "motivo": "Reserva VPA"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "8",
+   "area": 301.89,
+   "valor": 197874.4,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "9",
+   "area": 300.63,
+   "valor": 197048.54,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "10",
+   "area": 300.78,
+   "valor": 197146.85,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "11",
+   "area": 302.36,
+   "valor": 190318.09,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "12",
+   "area": 305.33,
+   "valor": 192187.52,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "13",
+   "area": 306.27,
+   "valor": 185450.4,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "14",
+   "area": 305.27,
+   "valor": 184844.89,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "15",
+   "area": 306.14,
+   "valor": 185371.69,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "16",
+   "area": 518.95,
+   "valor": 232163.7,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "17",
+   "area": 586.76,
+   "valor": 262500.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "18",
+   "area": 658.69,
+   "valor": 301532.47,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "19",
+   "area": 618.12,
+   "valor": 305468.72,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "20",
+   "area": 536.52,
+   "valor": 305891.08,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "21",
+   "area": 447.65,
+   "valor": 265468.98,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "22",
+   "area": 396.99,
+   "valor": 247817.04,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "23",
+   "area": 372.81,
+   "valor": 232722.91,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "24",
+   "area": 399.83,
+   "valor": 249589.88,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "25",
+   "area": 511.39,
+   "valor": 319230.09,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "26",
+   "area": 570.6,
+   "valor": 343387.08,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "27",
+   "area": 627.03,
+   "valor": 364555.24,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "28",
+   "area": 468.42,
+   "valor": 292406.5,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "29",
+   "area": 406.05,
+   "valor": 244601.11,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "30",
+   "area": 296.88,
+   "valor": 186868.74,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "31",
+   "area": 303.64,
+   "valor": 191123.76,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "32",
+   "area": 435.02,
+   "valor": 264013.64,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "33",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "34",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "35",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "36",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "37",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "38",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 03",
+   "lote": "39",
+   "area": 420.0,
+   "valor": 254898.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
    "quadra": "Quadra 04",
    "lote": "8",
    "area": 302.81,
@@ -98,6 +394,13 @@
   },
   {
    "quadra": "Quadra 04",
+   "lote": "16",
+   "area": 302.81,
+   "valor": 164990.0,
+   "situacao": "Reservado"
+  },
+  {
+   "quadra": "Quadra 04",
    "lote": "19",
    "area": 326.05,
    "valor": 181990.0
@@ -107,6 +410,14 @@
    "lote": "23",
    "area": 307.37,
    "valor": 179990.0
+  },
+  {
+   "quadra": "Quadra 04",
+   "lote": "27",
+   "area": 313.78,
+   "valor": 176990.0,
+   "situacao": "Bloqueado",
+   "motivo": "Reserva VPA"
   },
   {
    "quadra": "Quadra 05",
@@ -179,6 +490,13 @@
    "lote": "24",
    "area": 311.26,
    "valor": 179990.0
+  },
+  {
+   "quadra": "Quadra 06",
+   "lote": "3",
+   "area": 301.87,
+   "valor": 176990.0,
+   "situacao": "Reservado"
   },
   {
    "quadra": "Quadra 07",
@@ -295,6 +613,22 @@
    "valor": 164990.0
   },
   {
+   "quadra": "Quadra 08",
+   "lote": "33",
+   "area": 583.53,
+   "valor": 364836.12,
+   "situacao": "Bloqueado",
+   "motivo": "Reserva VPA"
+  },
+  {
+   "quadra": "Quadra 09",
+   "lote": "32",
+   "area": 289.26,
+   "valor": 222990.0,
+   "situacao": "Bloqueado",
+   "motivo": "Reserva VPA"
+  },
+  {
    "quadra": "Quadra 09",
    "lote": "43",
    "area": 300.71,
@@ -350,6 +684,198 @@
   },
   {
    "quadra": "Quadra 10",
+   "lote": "2",
+   "area": 209.84,
+   "valor": 172788.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "3",
+   "area": 222.04,
+   "valor": 172788.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "4",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "5",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "6",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "7",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "8",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "9",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "10",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "11",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "12",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "13",
+   "area": 373.78,
+   "valor": 254388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "14",
+   "area": 324.38,
+   "valor": 219300.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "15",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Estratégia Comercial"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "16",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Estratégia Comercial"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "17",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "18",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "19",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "20",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "21",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "22",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "23",
+   "area": 300.0,
+   "valor": 203388.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "24",
+   "area": 300.0,
+   "valor": 198390.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
+   "lote": "25",
+   "area": 300.0,
+   "valor": 198390.0,
+   "situacao": "Bloqueado",
+   "motivo": "Lote Caucionado"
+  },
+  {
+   "quadra": "Quadra 10",
    "lote": "26",
    "area": 300.0,
    "valor": 197990.0
@@ -383,6 +909,22 @@
    "lote": "37",
    "area": 325.85,
    "valor": 207990.0
+  },
+  {
+   "quadra": "Quadra 11",
+   "lote": "5",
+   "area": 285.66,
+   "valor": 232990.0,
+   "situacao": "Bloqueado",
+   "motivo": "Reserva VPA"
+  },
+  {
+   "quadra": "Quadra 11",
+   "lote": "6",
+   "area": 282.46,
+   "valor": 232990.0,
+   "situacao": "Bloqueado",
+   "motivo": "Reserva VPA"
   },
   {
    "quadra": "Quadra 11",
